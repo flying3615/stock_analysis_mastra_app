@@ -2,6 +2,9 @@ import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { chipAnalysisTool, patternAnalysisTool, bbsrAnalysisTool } from '../tools';
 
+// 导入综合分析Agent
+import { stockAnalysisAgent } from './stock-analysis-agent';
+
 export const bbsrAnalysisAgent = new Agent({
   name: 'BBSR Analysis Agent',
   instructions: `
@@ -89,3 +92,4 @@ export const chipAnalysisAgent = new Agent({
   model: openai('gpt-4o-mini'),
   tools: { chipAnalysisTool },
 });
+
