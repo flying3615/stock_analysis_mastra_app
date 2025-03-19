@@ -1,7 +1,66 @@
 import {createTool} from '@mastra/core/tools';
 import {z} from 'zod';
-import {getStockDataForTimeframe, multiTimeFrameChipDistAnalysis} from '@gabriel3615/ta_analysis';
+import {getStockDataForTimeframe, multiTimeFrameChipDistAnalysis, multiTimeframePatternAnalysis} from '@gabriel3615/ta_analysis';
 
+
+export const patternAnalysisTool = createTool({
+  id: 'analyze-pattern',
+  description: '分析股票的多时间周期形态特征',
+  inputSchema: z.object({
+    symbol: z.string().describe('股票代码，例如：600000，000001，300001')
+  }),
+  outputSchema: z.any(), // 使用z.any()替代复杂的自定义类型
+  execute: async ({ context }) => {
+    try {
+      const { symbol } = context;
+      
+      // 获取不同时间周期的数据
+      const today = new Date();
+      console.log(`正在获取${symbol}的数据与分析形态特征...`);
+      
+      // 设置不同时间周期的起始日期
+      const startDateWeekly = new Date();
+      startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
+      
+      const startDateDaily = new Date();
+      startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
+      
+      const startDateHourly = new Date();
+      startDateHourly.setDate(today.getDate() - 30); // 获取一个月的数据
+      
+      // 获取各个周期的数据
+      const weeklyData = await getStockDataForTimeframe(
+        symbol,
+        startDateWeekly,
+        today,
+        'weekly'
+      );
+      
+      const dailyData = await getStockDataForTimeframe(
+        symbol,
+        startDateDaily,
+        today,
+        'daily'
+      );
+      
+      const hourlyData = await getStockDataForTimeframe(
+        symbol,
+        startDateHourly,
+        today,
+        '1hour'
+      );
+      
+      // 调用多时间周期形态分析函数
+      return await multiTimeframePatternAnalysis(
+          weeklyData,
+          dailyData,
+          hourlyData
+      );
+    } catch (error) {
+      throw new Error(`无法分析${context.symbol}的多时间周期形态特征: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
+  },
+});
 
 export const chipAnalysisTool = createTool({
   id: 'analyze-chip',
