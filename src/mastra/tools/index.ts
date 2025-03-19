@@ -1,102 +1,80 @@
-import { createTool } from '@mastra/core/tools';
-import { z } from 'zod';
+import {createTool} from '@mastra/core/tools';
+import {z} from 'zod';
+import {getStockDataForTimeframe, multiTimeFrameChipDistAnalysis} from '@gabriel3615/ta_analysis';
 
-interface GeocodingResponse {
-  results: {
-    latitude: number;
-    longitude: number;
-    name: string;
-  }[];
-}
-interface WeatherResponse {
-  current: {
-    time: string;
-    temperature_2m: number;
-    apparent_temperature: number;
-    relative_humidity_2m: number;
-    wind_speed_10m: number;
-    wind_gusts_10m: number;
-    weather_code: number;
-  };
-}
 
-export const weatherTool = createTool({
-  id: 'get-weather',
-  description: 'Get current weather for a location',
+export const chipAnalysisTool = createTool({
+  id: 'analyze-chip',
+  description: '分析股票的筹码分布数据（多时间周期）',
   inputSchema: z.object({
-    location: z.string().describe('City name'),
+    symbol: z.string().describe('股票代码，例如：600000，000001，300001'),
+    primaryTimeframe: z.enum(['weekly', 'daily', '1hour']).default('daily').describe('主要分析时间周期'),
+    timeframes: z.array(z.enum(['weekly', 'daily', '1hour'])).default(['weekly', 'daily', '1hour']).describe('包含的所有时间周期'),
+    weights: z.record(z.string(), z.number()).optional().describe('各时间周期权重，例如: { weekly: 0.3, daily: 0.5, "1hour": 0.2 }')
   }),
-  outputSchema: z.object({
-    temperature: z.number(),
-    feelsLike: z.number(),
-    humidity: z.number(),
-    windSpeed: z.number(),
-    windGust: z.number(),
-    conditions: z.string(),
-    location: z.string(),
-  }),
+  outputSchema: z.any(), // 使用z.any()替代z.custom<MultiTimeframeAnalysisResult>()来避免类型错误
   execute: async ({ context }) => {
-    return await getWeather(context.location);
+    try {
+      const { symbol, primaryTimeframe, timeframes, weights } = context;
+      
+      // 设置默认权重（如果未提供）
+      const timeframeWeights = weights || {
+        'weekly': 0.3,
+        'daily': 0.5,
+        '1hour': 0.2
+      };
+      
+      // 获取不同时间周期的数据
+      const today = new Date();
+      console.log(`正在获取${symbol}的数据与分析筹码分布...`);
+      
+      // 设置不同时间周期的起始日期
+      const startDateWeekly = new Date();
+      startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
+      
+      const startDateDaily = new Date();
+      startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
+      
+      const startDateHourly = new Date();
+      startDateHourly.setDate(today.getDate() - 30); // 获取一个月的数据
+      
+      // 获取各个周期的数据
+      const weeklyData = await getStockDataForTimeframe(
+        symbol,
+        startDateWeekly,
+        today,
+        'weekly'
+      );
+      
+      const dailyData = await getStockDataForTimeframe(
+        symbol,
+        startDateDaily,
+        today,
+        'daily'
+      );
+      
+      const hourlyData = await getStockDataForTimeframe(
+        symbol,
+        startDateHourly,
+        today,
+        '1hour'
+      );
+      
+      // 尝试调用多时间周期筹码分布分析函数，如果函数签名变化可能需要调整
+      return await multiTimeFrameChipDistAnalysis(
+          symbol,
+          primaryTimeframe,
+          timeframes,
+          timeframeWeights as Record<string, number>,
+          weeklyData,
+          dailyData,
+          hourlyData
+      );
+    } catch (error) {
+      throw new Error(`无法分析${context.symbol}的多时间周期筹码数据: ${error instanceof Error ? error.message : '未知错误'}`)
+    }
   },
 });
 
-const getWeather = async (location: string) => {
-  const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`;
-  const geocodingResponse = await fetch(geocodingUrl);
-  const geocodingData = (await geocodingResponse.json()) as GeocodingResponse;
 
-  if (!geocodingData.results?.[0]) {
-    throw new Error(`Location '${location}' not found`);
-  }
 
-  const { latitude, longitude, name } = geocodingData.results[0];
-
-  const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,weather_code`;
-
-  const response = await fetch(weatherUrl);
-  const data = (await response.json()) as WeatherResponse;
-
-  return {
-    temperature: data.current.temperature_2m,
-    feelsLike: data.current.apparent_temperature,
-    humidity: data.current.relative_humidity_2m,
-    windSpeed: data.current.wind_speed_10m,
-    windGust: data.current.wind_gusts_10m,
-    conditions: getWeatherCondition(data.current.weather_code),
-    location: name,
-  };
-};
-
-function getWeatherCondition(code: number): string {
-  const conditions: Record<number, string> = {
-    0: 'Clear sky',
-    1: 'Mainly clear',
-    2: 'Partly cloudy',
-    3: 'Overcast',
-    45: 'Foggy',
-    48: 'Depositing rime fog',
-    51: 'Light drizzle',
-    53: 'Moderate drizzle',
-    55: 'Dense drizzle',
-    56: 'Light freezing drizzle',
-    57: 'Dense freezing drizzle',
-    61: 'Slight rain',
-    63: 'Moderate rain',
-    65: 'Heavy rain',
-    66: 'Light freezing rain',
-    67: 'Heavy freezing rain',
-    71: 'Slight snow fall',
-    73: 'Moderate snow fall',
-    75: 'Heavy snow fall',
-    77: 'Snow grains',
-    80: 'Slight rain showers',
-    81: 'Moderate rain showers',
-    82: 'Violent rain showers',
-    85: 'Slight snow showers',
-    86: 'Heavy snow showers',
-    95: 'Thunderstorm',
-    96: 'Thunderstorm with slight hail',
-    99: 'Thunderstorm with heavy hail',
-  };
-  return conditions[code] || 'Unknown';
-}
