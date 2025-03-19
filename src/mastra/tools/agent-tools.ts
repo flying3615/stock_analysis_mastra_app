@@ -13,25 +13,27 @@ function createAgentTool(agentName: string, description: string) {
     id: `call-${agentName}`,
     description,
     inputSchema: z.object({
-      symbol: z.string().describe('股票代码，例如：TSLA，AAPL，GOOGL')
+      symbol: z.string().describe('股票代码，例如：TSLA，AAPL，GOOGL'),
     }),
     execute: async ({ context }) => {
       const { symbol } = context;
       console.log(`正在调用${agentName}分析${symbol}...`);
-      
+
       try {
         // @ts-ignore
         const agent = mastra.getAgent(agentName);
         if (!agent) {
           throw new Error(`未找到名为${agentName}的Agent`);
         }
-        
+
         const response = await agent.generate(`分析股票${symbol}`);
         return response.text;
       } catch (error) {
-        throw new Error(`调用${agentName}失败: ${error instanceof Error ? error.message : '未知错误'}`);
+        throw new Error(
+          `调用${agentName}失败: ${error instanceof Error ? error.message : '未知错误'}`
+        );
       }
-    }
+    },
   });
 }
 

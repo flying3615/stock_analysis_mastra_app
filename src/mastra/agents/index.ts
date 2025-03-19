@@ -1,6 +1,10 @@
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
-import { chipAnalysisTool, patternAnalysisTool, bbsrAnalysisTool } from '../tools';
+import {
+  chipAnalysisTool,
+  patternAnalysisTool,
+  bbsrAnalysisTool,
+} from '../tools';
 import { stockAnalysisMemory } from '../config/memory-config';
 
 export const bbsrAnalysisAgent = new Agent({
@@ -93,4 +97,3 @@ export const chipAnalysisAgent = new Agent({
   tools: { chipAnalysisTool },
   memory: stockAnalysisMemory,
 });
-

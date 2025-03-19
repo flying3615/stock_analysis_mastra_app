@@ -5,7 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "mastra dev",
-    "example:memory": "tsx src/examples/memory-example.ts"
+    "example:memory": "tsx src/examples/memory-example.ts",
+    "lint": "npx eslint src",
+    "lint:fix": "npm run lint -- --fix"
   },
   "keywords": [],
   "author": "",
@@ -13,11 +15,17 @@
   "description": "",
   "type": "module",
   "dependencies": {
+    "@ai-sdk/deepseek": "^0.1.15",
     "@ai-sdk/openai": "^1.2.5",
+    "@eslint/js": "^9.21.0",
     "@gabriel3615/ta_analysis": "^1.0.8",
     "@mastra/core": "^0.6.3",
     "@mastra/memory": "^0.2.4",
+    "eslint-config-prettier": "^10.0.2",
+    "eslint-plugin-prettier": "^5.2.3",
+    "globals": "^16.0.0",
     "mastra": "^0.4.2",
+    "typescript-eslint": "^8.26.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {

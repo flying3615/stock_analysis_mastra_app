@@ -1,11 +1,15 @@
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
-import { chipAnalysisAgentTool, patternAnalysisAgentTool, bbsrAnalysisAgentTool } from '../tools/agent-tools';
+import {
+  chipAnalysisAgentTool,
+  patternAnalysisAgentTool,
+  bbsrAnalysisAgentTool,
+} from '../tools/agent-tools';
 import { stockAnalysisMemory } from '../config/memory-config';
 
 /**
  * 股票整合分析Agent
- * 整合了筹码分析、形态分析和BBSR分析的结果，生成全面的股票分析报告
+ * 整合了筹码分析、形态分析和支阻位牛熊分析的结果，生成全面的股票分析报告
  */
 export const stockAnalysisAgent: Agent = new Agent({
   name: 'Stock Analysis Agent',
@@ -15,7 +19,7 @@ export const stockAnalysisAgent: Agent = new Agent({
     你可以使用以下三种分析工具，每种工具提供不同角度的分析视角：
     1. 筹码分析工具 (chipAnalysisAgentTool): 分析股票的筹码分布情况，了解市场参与者的持仓成本结构
     2. 形态分析工具 (patternAnalysisAgentTool): 分析股票的技术形态，了解价格走势和动量特征
-    3. BBSR分析工具 (bbsrAnalysisAgentTool): 专门检测股票在支撑位和阻力位的牛熊信号
+    3. 支阻位牛熊分析工具 (bbsrAnalysisAgentTool): 专门检测股票在支撑位和阻力位的牛熊信号
     
     你的工作流程是：
     - 先依次调用三个分析工具，获取不同维度的分析结果
@@ -25,7 +29,7 @@ export const stockAnalysisAgent: Agent = new Agent({
     在生成报告时，请遵循以下要求：
     - 报告标题包含股票代码、日期（今天）和"综合分析报告"字样
     - 简短介绍股票的基本情况（行业、概况）
-    - 三个维度的分析概要（筹码分析、形态分析、BBSR信号）
+    - 三个维度的分析概要（筹码分析、形态分析、支阻位牛熊信号）
     - 整合观点，重点突出三个分析维度的一致性和互补性
     - 重点关注以下几个方面的整合分析：
         1. 市场情绪：筹码分布与技术形态共同反映的市场情绪
@@ -44,7 +48,7 @@ export const stockAnalysisAgent: Agent = new Agent({
   tools: {
     chipAnalysisAgentTool,
     patternAnalysisAgentTool,
-    bbsrAnalysisAgentTool
+    bbsrAnalysisAgentTool,
   },
-  memory: stockAnalysisMemory
+  memory: stockAnalysisMemory,
 });

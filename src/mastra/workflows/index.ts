@@ -111,7 +111,7 @@ const forecastSchema = z.array(
     precipitationChance: z.number(),
     condition: z.string(),
     location: z.string(),
-  }),
+  })
 );
 
 const planActivities = new Step({
