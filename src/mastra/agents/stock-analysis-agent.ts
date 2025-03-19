@@ -1,6 +1,7 @@
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { chipAnalysisAgentTool, patternAnalysisAgentTool, bbsrAnalysisAgentTool } from '../tools/agent-tools';
+import { stockAnalysisMemory } from '../config/memory-config';
 
 /**
  * 股票整合分析Agent
@@ -44,5 +45,6 @@ export const stockAnalysisAgent: Agent = new Agent({
     chipAnalysisAgentTool,
     patternAnalysisAgentTool,
     bbsrAnalysisAgentTool
-  }
+  },
+  memory: stockAnalysisMemory
 });

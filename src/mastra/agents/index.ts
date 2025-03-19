@@ -1,9 +1,7 @@
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { chipAnalysisTool, patternAnalysisTool, bbsrAnalysisTool } from '../tools';
-
-// 导入综合分析Agent
-import { stockAnalysisAgent } from './stock-analysis-agent';
+import { stockAnalysisMemory } from '../config/memory-config';
 
 export const bbsrAnalysisAgent = new Agent({
   name: 'BBSR Analysis Agent',
@@ -35,6 +33,7 @@ export const bbsrAnalysisAgent = new Agent({
   `,
   model: openai('gpt-4o-mini'),
   tools: { bbsrAnalysisTool },
+  memory: stockAnalysisMemory,
 });
 
 export const patternAnalysisAgent = new Agent({
@@ -61,6 +60,7 @@ export const patternAnalysisAgent = new Agent({
   `,
   model: openai('gpt-4o-mini'),
   tools: { patternAnalysisTool },
+  memory: stockAnalysisMemory,
 });
 
 export const chipAnalysisAgent = new Agent({
@@ -91,5 +91,6 @@ export const chipAnalysisAgent = new Agent({
   `,
   model: openai('gpt-4o-mini'),
   tools: { chipAnalysisTool },
+  memory: stockAnalysisMemory,
 });
 

@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "mastra dev"
+    "dev": "mastra dev",
+    "example:memory": "tsx src/examples/memory-example.ts"
   },
   "keywords": [],
   "author": "",
@@ -15,6 +16,7 @@
     "@ai-sdk/openai": "^1.2.5",
     "@gabriel3615/ta_analysis": "^1.0.8",
     "@mastra/core": "^0.6.3",
+    "@mastra/memory": "^0.2.4",
     "mastra": "^0.4.2",
     "zod": "^3.24.2"
   },
