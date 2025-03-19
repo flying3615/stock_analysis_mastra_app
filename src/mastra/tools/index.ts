@@ -2,6 +2,62 @@ import {createTool} from '@mastra/core/tools';
 import {z} from 'zod';
 import {getStockDataForTimeframe, multiTimeFrameChipDistAnalysis, multiTimeframePatternAnalysis} from '@gabriel3615/ta_analysis';
 
+/**
+ * 处理并格式化错误信息
+ * @param symbol 股票代码
+ * @param error 错误对象
+ * @param analysisType 分析类型描述
+ * @returns 格式化的错误信息
+ */
+function formatErrorMessage(symbol: string, error: unknown, analysisType: string): string {
+  return `无法分析${symbol}的${analysisType}: ${error instanceof Error ? error.message : '未知错误'}`;
+}
+
+/**
+ * 获取多时间周期的股票数据
+ * @param symbol 股票代码
+ * @param logMessage 日志信息
+ * @returns 包含周线、日线和小时线数据的对象
+ */
+async function fetchMultiTimeframeData(symbol: string, logMessage: string) {
+  const today = new Date();
+  console.log(logMessage);
+  
+  // 设置不同时间周期的起始日期
+  const startDateWeekly = new Date();
+  startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
+  
+  const startDateDaily = new Date();
+  startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
+  
+  const startDateHourly = new Date();
+  startDateHourly.setDate(today.getDate() - 30); // 获取一个月的数据
+  
+  // 获取各个周期的数据
+  const weeklyData = await getStockDataForTimeframe(
+    symbol,
+    startDateWeekly,
+    today,
+    'weekly'
+  );
+  
+  const dailyData = await getStockDataForTimeframe(
+    symbol,
+    startDateDaily,
+    today,
+    'daily'
+  );
+  
+  const hourlyData = await getStockDataForTimeframe(
+    symbol,
+    startDateHourly,
+    today,
+    '1hour'
+  );
+  
+  return { weeklyData, dailyData, hourlyData };
+}
+
 
 export const bbsrAnalysisTool = createTool({
   id: 'analyze-bbsr',
@@ -14,50 +70,20 @@ export const bbsrAnalysisTool = createTool({
     try {
       const { symbol } = context;
       
-      // 获取不同时间周期的数据
-      const today = new Date();
-      console.log(`正在获取${symbol}的数据与分析BBSR信号...`);
-      
-      // 设置不同时间周期的起始日期
-      const startDateWeekly = new Date();
-      startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
-      
-      const startDateDaily = new Date();
-      startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
-      
-      const startDateHourly = new Date();
-      startDateHourly.setDate(today.getDate() - 30); // 获取一个月的数据
-      
-      // 获取各个周期的数据
-      const weeklyData = await getStockDataForTimeframe(
-        symbol,
-        startDateWeekly,
-        today,
-        'weekly'
+      // 获取多时间周期数据
+      const { weeklyData, dailyData, hourlyData } = await fetchMultiTimeframeData(
+        symbol, 
+        `正在获取${symbol}的数据与分析BBSR信号...`
       );
       
-      const dailyData = await getStockDataForTimeframe(
-        symbol,
-        startDateDaily,
-        today,
-        'daily'
-      );
-      
-      const hourlyData = await getStockDataForTimeframe(
-        symbol,
-        startDateHourly,
-        today,
-        '1hour'
-      );
-      
-      // 调用多时间周期形态分析函数，与patternAnalysisTool相同
+      // 调用多时间周期形态分析函数
       return await multiTimeframePatternAnalysis(
           weeklyData,
           dailyData,
           hourlyData
       );
     } catch (error) {
-      throw new Error(`无法分析${context.symbol}的BBSR信号: ${error instanceof Error ? error.message : '未知错误'}`)
+      throw new Error(formatErrorMessage(context.symbol, error, 'BBSR信号'))
     }
   },
 });
@@ -73,40 +99,10 @@ export const patternAnalysisTool = createTool({
     try {
       const { symbol } = context;
       
-      // 获取不同时间周期的数据
-      const today = new Date();
-      console.log(`正在获取${symbol}的数据与分析形态特征...`);
-      
-      // 设置不同时间周期的起始日期
-      const startDateWeekly = new Date();
-      startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
-      
-      const startDateDaily = new Date();
-      startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
-      
-      const startDateHourly = new Date();
-      startDateHourly.setDate(today.getDate() - 30); // 获取一个月的数据
-      
-      // 获取各个周期的数据
-      const weeklyData = await getStockDataForTimeframe(
-        symbol,
-        startDateWeekly,
-        today,
-        'weekly'
-      );
-      
-      const dailyData = await getStockDataForTimeframe(
-        symbol,
-        startDateDaily,
-        today,
-        'daily'
-      );
-      
-      const hourlyData = await getStockDataForTimeframe(
-        symbol,
-        startDateHourly,
-        today,
-        '1hour'
+      // 获取多时间周期数据
+      const { weeklyData, dailyData, hourlyData } = await fetchMultiTimeframeData(
+        symbol, 
+        `正在获取${symbol}的数据与分析形态特征...`
       );
       
       // 调用多时间周期形态分析函数
@@ -116,7 +112,7 @@ export const patternAnalysisTool = createTool({
           hourlyData
       );
     } catch (error) {
-      throw new Error(`无法分析${context.symbol}的多时间周期形态特征: ${error instanceof Error ? error.message : '未知错误'}`)
+      throw new Error(formatErrorMessage(context.symbol, error, '多时间周期形态特征'))
     }
   },
 });
@@ -142,43 +138,13 @@ export const chipAnalysisTool = createTool({
         '1hour': 0.2
       };
       
-      // 获取不同时间周期的数据
-      const today = new Date();
-      console.log(`正在获取${symbol}的数据与分析筹码分布...`);
-      
-      // 设置不同时间周期的起始日期
-      const startDateWeekly = new Date();
-      startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
-      
-      const startDateDaily = new Date();
-      startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
-      
-      const startDateHourly = new Date();
-      startDateHourly.setDate(today.getDate() - 30); // 获取一个月的数据
-      
-      // 获取各个周期的数据
-      const weeklyData = await getStockDataForTimeframe(
-        symbol,
-        startDateWeekly,
-        today,
-        'weekly'
+      // 获取多时间周期数据
+      const { weeklyData, dailyData, hourlyData } = await fetchMultiTimeframeData(
+        symbol, 
+        `正在获取${symbol}的数据与分析筹码分布...`
       );
       
-      const dailyData = await getStockDataForTimeframe(
-        symbol,
-        startDateDaily,
-        today,
-        'daily'
-      );
-      
-      const hourlyData = await getStockDataForTimeframe(
-        symbol,
-        startDateHourly,
-        today,
-        '1hour'
-      );
-      
-      // 尝试调用多时间周期筹码分布分析函数，如果函数签名变化可能需要调整
+      // 调用多时间周期筹码分布分析函数
       return await multiTimeFrameChipDistAnalysis(
           symbol,
           primaryTimeframe,
@@ -189,7 +155,7 @@ export const chipAnalysisTool = createTool({
           hourlyData
       );
     } catch (error) {
-      throw new Error(`无法分析${context.symbol}的多时间周期筹码数据: ${error instanceof Error ? error.message : '未知错误'}`)
+      throw new Error(formatErrorMessage(context.symbol, error, '多时间周期筹码数据'))
     }
   },
 });
