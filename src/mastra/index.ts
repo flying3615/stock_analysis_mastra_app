@@ -5,7 +5,7 @@ import url from 'node:url';
 import { stockAnalysisAgent } from './agents/stock-analysis-agent.js';
 import { weatherWorkflow } from './workflows/index.js';
 import { bbsrAnalysisAgent, chipAnalysisAgent, patternAnalysisAgent, newsScraperAgent } from './agents/index.js';
-import { setAgentRegistry } from './tools/agent-tools';
+import { setAgentRegistry } from './tools/agent-tools.js';
 
 // 初始化并注册基本agents
 const initBasicAgents = () => {
