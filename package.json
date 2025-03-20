@@ -6,6 +6,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "mastra dev",
     "example:memory": "tsx src/examples/memory-example.ts",
+    "example:news": "tsx src/examples/news-scraper/news-scraper-example.ts",
     "lint": "npx eslint src",
     "lint:fix": "npm run lint -- --fix"
   },
@@ -20,6 +21,7 @@
     "@eslint/js": "^9.21.0",
     "@gabriel3615/ta_analysis": "^1.0.8",
     "@mastra/core": "^0.6.3",
+    "@mastra/mcp": "^0.3.4",
     "@mastra/memory": "^0.2.4",
     "eslint-config-prettier": "^10.0.2",
     "eslint-plugin-prettier": "^5.2.3",

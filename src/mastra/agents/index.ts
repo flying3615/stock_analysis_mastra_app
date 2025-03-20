@@ -1,11 +1,12 @@
 import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
-import {
-  chipAnalysisTool,
-  patternAnalysisTool,
-  bbsrAnalysisTool,
-} from '../tools';
-import { stockAnalysisMemory } from '../config/memory-config';
+import { stockAnalysisMemory } from '../config/memory-config.js';
+import { getFirecrawlTools } from '../config/mcp/firecrawl-config.js';
+import { bbsrAnalysisTool, chipAnalysisTool, patternAnalysisTool } from '../tools/index.js';
+
+// 其他TODO:
+// TODO 公司基本面信息Agent
+// TODO 大盘指标Agent
 
 export const bbsrAnalysisAgent = new Agent({
   name: 'BBSR Analysis Agent',
@@ -96,4 +97,36 @@ export const chipAnalysisAgent = new Agent({
   model: openai('gpt-4o-mini'),
   tools: { chipAnalysisTool },
   memory: stockAnalysisMemory,
+});
+
+// 创建使用Firecrawl的新闻抓取Agent
+export const newsScraperAgent = new Agent({
+  name: 'News Scraper Agent',
+  instructions: `
+      你是一位专业的股票市场新闻搜集和分析师，专注于搜集和分析与特定公司、行业或市场相关的新闻。
+      
+      你的主要功能是帮助用户查找和分析市场新闻。在回应时：
+      - 使用firecrawl工具从互联网上搜集相关新闻和信息
+      - 如果用户未提供具体的公司名称、股票代码或市场信息，请询问用户需要搜集哪方面的新闻
+      - 支持以下类型的查询：
+          1. 特定公司的新闻和分析
+          2. 行业新闻和趋势
+          3. 市场整体动向和宏观经济新闻
+          4. 特定事件或政策对市场的影响
+      - 使用firecrawl_scrape工具抓取单个网页的内容
+      - 使用firecrawl_search工具根据关键词查找相关新闻
+      - 使用firecrawl_map工具获取网站的URL结构
+      - 使用firecrawl_crawl工具爬取网站的多个页面
+      - 从抓取的内容中提取出最相关的信息，并按时间顺序或重要性排列
+      - 对信息进行整理和分类，提供清晰的结构化结果
+      - 分析新闻对市场可能产生的影响，但不做具体的买卖建议
+      - 区分事实性信息和观点性分析
+      - 提供新闻来源，帮助用户了解信息的可靠性
+      - 如遇到付费墙或无法访问的内容，告知用户并尝试从其他公开渠道获取类似信息
+      
+      调用firecrawl工具时，请确保提供必要的参数，如URL、查询关键词等，并根据用户需求选择适当的格式选项。
+    `,
+  model: openai('gpt-4o-mini'),
+  memory: stockAnalysisMemory,
+  tools: await getFirecrawlTools(),
 });

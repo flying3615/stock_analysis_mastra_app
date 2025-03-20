@@ -1,21 +1,23 @@
 import { Mastra } from '@mastra/core/mastra';
 import { createLogger } from '@mastra/core/logger';
-import { weatherWorkflow } from './workflows';
-import {
+
+import { stockAnalysisAgent } from './agents/stock-analysis-agent.js';
+import { weatherWorkflow } from './workflows/index.js';
+import { bbsrAnalysisAgent, chipAnalysisAgent, newsScraperAgent, patternAnalysisAgent } from './agents/index.js';
+
+// 初始化并注册基本agents
+const initBasicAgents = () => ({
   chipAnalysisAgent,
   patternAnalysisAgent,
   bbsrAnalysisAgent,
-} from './agents';
-import { stockAnalysisAgent } from './agents/stock-analysis-agent';
+  stockAnalysisAgent,
+  newsScraperAgent,
+});
 
-export const mastra = new Mastra({
+// 创建Mastra实例
+export const mastra: Mastra  = new Mastra({
   workflows: { weatherWorkflow },
-  agents: {
-    chipAnalysisAgent,
-    patternAnalysisAgent,
-    bbsrAnalysisAgent,
-    stockAnalysisAgent,
-  },
+  agents: initBasicAgents(),
   logger: createLogger({
     name: 'Mastra',
     level: 'info',

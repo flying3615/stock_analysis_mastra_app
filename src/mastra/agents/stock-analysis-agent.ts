@@ -4,8 +4,8 @@ import {
   chipAnalysisAgentTool,
   patternAnalysisAgentTool,
   bbsrAnalysisAgentTool,
-} from '../tools/agent-tools';
-import { stockAnalysisMemory } from '../config/memory-config';
+} from '../tools/agent-tools.js';
+import { stockAnalysisMemory } from '../config/memory-config.js';
 
 /**
  * 股票整合分析Agent

@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { mastra } from '../index';
+import { mastra } from '../index.js';
 
 /**
  * 创建用于调用股票分析Agent的工具
@@ -8,7 +8,15 @@ import { mastra } from '../index';
  * @param description 工具描述
  * @returns 工具对象
  */
-function createAgentTool(agentName: string, description: string) {
+function createAgentTool(
+  agentName:
+    | 'chipAnalysisAgent'
+    | 'patternAnalysisAgent'
+    | 'bbsrAnalysisAgent'
+    | 'stockAnalysisAgent'
+    | 'newsScraperAgent',
+  description: string
+) {
   return createTool({
     id: `call-${agentName}`,
     description,
@@ -20,7 +28,6 @@ function createAgentTool(agentName: string, description: string) {
       console.log(`正在调用${agentName}分析${symbol}...`);
 
       try {
-        // @ts-ignore
         const agent = mastra.getAgent(agentName);
         if (!agent) {
           throw new Error(`未找到名为${agentName}的Agent`);
