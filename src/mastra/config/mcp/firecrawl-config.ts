@@ -10,7 +10,7 @@ export const firecrawlMcpConfig = new MCPConfiguration({
       args: ['-y', 'firecrawl-mcp'],
       env: {
         // 如果你有Firecrawl API密钥，可以在这里添加
-        FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY!,
+        FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY || '',
 
         FIRECRAWL_RETRY_MAX_ATTEMPTS: '5',
         FIRECRAWL_RETRY_INITIAL_DELAY: '2000',
@@ -31,6 +31,6 @@ export async function getFirecrawlTools() {
     return await firecrawlMcpConfig.getTools();
   } catch (error) {
     console.error('获取Firecrawl工具失败:', error);
-    throw error;
+    return {}; // 返回空对象而不是抛出错误，这样即使工具获取失败，应用也能正常运行
   }
 }

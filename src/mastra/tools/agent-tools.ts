@@ -1,6 +1,17 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { mastra } from '../index.js';
+import { Agent } from '@mastra/core/agent';
+
+// 存储agent的引用
+let mastraAgentRegistry: Record<string, Agent> = {};
+
+/**
+ * 设置Mastra Agent注册表
+ * 这个函数将在mastra/index.ts中被调用，打破循环依赖
+ */
+export function setAgentRegistry(registry: Record<string, Agent>) {
+  mastraAgentRegistry = registry;
+}
 
 /**
  * 创建用于调用股票分析Agent的工具
@@ -28,7 +39,7 @@ function createAgentTool(
       console.log(`正在调用${agentName}分析${symbol}...`);
 
       try {
-        const agent = mastra.getAgent(agentName);
+        const agent = mastraAgentRegistry[agentName];
         if (!agent) {
           throw new Error(`未找到名为${agentName}的Agent`);
         }

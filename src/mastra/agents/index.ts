@@ -126,7 +126,7 @@ export const newsScraperAgent = new Agent({
       
       调用firecrawl工具时，请确保提供必要的参数，如URL、查询关键词等，并根据用户需求选择适当的格式选项。
     `,
-  model: openai('gpt-4o-mini'),
+  model: openai('gpt-4o'),
   memory: stockAnalysisMemory,
   tools: await getFirecrawlTools(),
 });
