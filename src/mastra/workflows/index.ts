@@ -3,6 +3,89 @@ import { Agent } from '@mastra/core/agent';
 import { Step, Workflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { stockAnalysisMemory } from '../config/memory-config.js';
+import fs from 'fs/promises';
+import path from 'path';
+import { format } from 'date-fns';
+
+// 创建生成HTML报告并保存的步骤
+const generateHtmlReport = new Step({
+  id: 'generate-html-report',
+  description: '将综合分析结果转换为HTML格式并保存到本地',
+  inputSchema: z.object({
+    integratedAnalysis: z.string(),
+    symbol: z.string(),
+  }),
+  execute: async ({ context }) => {
+    const integrationResult = context.getStepResult<{ integratedAnalysis: string, symbol: string }>('integrate-analysis');
+    
+    if (!integrationResult) {
+      throw new Error('无法获取分析结果');
+    }
+    
+    const { integratedAnalysis, symbol } = integrationResult;
+    
+    // 使用Agent来生成HTML
+    const htmlGeneratorAgent = new Agent({
+      name: 'HTML Report Generator',
+      instructions: `
+        你是一名专业的HTML报告生成器，可以将Markdown格式的分析报告转换为漂亮的HTML网页。
+        
+        你的任务是：
+        - 将提供的股票分析报告转换为带有样式的HTML
+        - 创建一个响应式、美观的设计
+        - 使用现代的CSS框架（比如Bootstrap或类似的）
+        - 确保格式良好，有标题、分节和分隔线
+        - 添加颜色编码或图标以便于识别市场情绪（看涨/看跌/中性）
+        - 添加日期和时间戳
+        - 将数据点和数字突出显示
+        - 可以添加仿色影、前景区域等设计元素
+        - 生成一个完整的HTML文件，包含所有必要的标签（html, head, body等）
+        
+        输出应是一个完整的HTML文件，包含内联CSS样式。不需要包含任何说明或HTML以外的其他内容。
+      `,
+      model: openai('gpt-4o-mini'),
+    });
+    
+    // 构建提示词
+    const prompt = `
+      请将以下关于${symbol}股票的分析报告转换为漂亮的HTML网页：
+      
+      ${integratedAnalysis}
+    `;
+    
+    // 获取HTML生成结果
+    const response = await htmlGeneratorAgent.generate(prompt);
+    
+    // 生成文件名与路径
+    const currentDate = new Date();
+    const formattedDate = format(currentDate, 'yyyy-MM-dd');
+    const fileName = `${symbol}_analysis_${formattedDate}.html`;
+    
+    // 创建路径
+    const reportDir = path.join(process.cwd(), 'reports');
+    const filePath = path.join(reportDir, fileName);
+    
+    try {
+      // 确保目录存在
+      await fs.mkdir(reportDir, { recursive: true });
+      
+      // 写入HTML文件
+      await fs.writeFile(filePath, response.text, 'utf-8');
+      
+      console.log(`HTML报告已保存至: ${filePath}`);
+      
+      return {
+        reportPath: filePath,
+        symbol,
+        generatedAt: currentDate.toISOString(),
+        reportUrl: `file://${filePath}` // 本地文件URL
+      };
+    } catch (error) {
+      console.error('写入HTML报告时出错:', error);
+      throw new Error(`无法保存HTML报告: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  },
+});
 
 // 定义输入模式
 const stockInputSchema = z.object({
@@ -19,7 +102,7 @@ const integrateAnalysis = new Step({
     patternAnalysis: z.string(),
     newsAnalysis: z.string(),
   }),
-  execute: async ({ context, mastra }) => {
+  execute: async ({ context }) => {
     // 获取前面步骤的结果
     const bbsrResult = context.getStepResult<{ analysis: string }>('bbsr-analysis');
     const chipResult = context.getStepResult<{ analysis: string }>('chip-analysis');
@@ -223,7 +306,8 @@ const stockAnalysisWorkflow = new Workflow({
   .step(patternAnalysisStep)
   .step(newsAnalysisStep)
   .after([bbsrAnalysisStep, chipAnalysisStep, patternAnalysisStep, newsAnalysisStep])
-  .step(integrateAnalysis);
+  .step(integrateAnalysis)
+  .then(generateHtmlReport);
 
 // 提交工作流
 stockAnalysisWorkflow.commit();

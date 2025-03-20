@@ -24,6 +24,7 @@
     "@mastra/core": "^0.6.3",
     "@mastra/mcp": "^0.3.4",
     "@mastra/memory": "^0.2.4",
+    "date-fns": "^4.1.0",
     "eslint-config-prettier": "^10.0.2",
     "eslint-plugin-prettier": "^5.2.3",
     "globals": "^16.0.0",
