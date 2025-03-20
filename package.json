@@ -7,6 +7,7 @@
     "dev": "mastra dev",
     "example:memory": "tsx src/examples/memory-example.ts",
     "example:news": "tsx src/examples/news-scraper/news-scraper-example.ts",
+    "example:comprehensive": "tsx src/examples/comprehensive-analysis/comprehensive-analysis-example.ts",
     "lint": "npx eslint src",
     "lint:fix": "npm run lint -- --fix"
   },

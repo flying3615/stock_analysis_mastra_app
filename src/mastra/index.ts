@@ -3,7 +3,7 @@ import { createLogger } from '@mastra/core/logger';
 import url from 'node:url';
 
 import { stockAnalysisAgent } from './agents/stock-analysis-agent.js';
-import { weatherWorkflow } from './workflows/index.js';
+import { stockAnalysisWorkflow } from './workflows/index.js';
 import { bbsrAnalysisAgent, chipAnalysisAgent, patternAnalysisAgent, newsScraperAgent } from './agents/index.js';
 import { setAgentRegistry } from './tools/agent-tools.js';
 
@@ -26,7 +26,9 @@ const initBasicAgents = () => {
 
 // 创建Mastra实例
 export const mastra: Mastra = new Mastra({
-  workflows: { weatherWorkflow },
+  workflows: {
+    stockAnalysisWorkflow // 添加股票分析工作流
+  },
   agents: initBasicAgents(),
   logger: createLogger({
     name: 'Mastra',
