@@ -16,14 +16,17 @@ const generateHtmlReport = new Step({
     symbol: z.string(),
   }),
   execute: async ({ context }) => {
-    const integrationResult = context.getStepResult<{ integratedAnalysis: string, symbol: string }>('integrate-analysis');
-    
+    const integrationResult = context.getStepResult<{
+      integratedAnalysis: string;
+      symbol: string;
+    }>('integrate-analysis');
+
     if (!integrationResult) {
       throw new Error('无法获取分析结果');
     }
-    
+
     const { integratedAnalysis, symbol } = integrationResult;
-    
+
     // 使用Agent来生成HTML
     const htmlGeneratorAgent = new Agent({
       name: 'HTML Report Generator',
@@ -45,44 +48,46 @@ const generateHtmlReport = new Step({
       `,
       model: openai('gpt-4o-mini'),
     });
-    
+
     // 构建提示词
     const prompt = `
       请将以下关于${symbol}股票的分析报告转换为漂亮的HTML网页：
       
       ${integratedAnalysis}
     `;
-    
+
     // 获取HTML生成结果
     const response = await htmlGeneratorAgent.generate(prompt);
-    
+
     // 生成文件名与路径
     const currentDate = new Date();
     const formattedDate = format(currentDate, 'yyyy-MM-dd');
     const fileName = `${symbol}_analysis_${formattedDate}.html`;
-    
+
     // 创建路径
     const reportDir = path.join(process.cwd(), 'reports');
     const filePath = path.join(reportDir, fileName);
-    
+
     try {
       // 确保目录存在
       await fs.mkdir(reportDir, { recursive: true });
-      
+
       // 写入HTML文件
       await fs.writeFile(filePath, response.text, 'utf-8');
-      
+
       console.log(`HTML报告已保存至: ${filePath}`);
-      
+
       return {
         reportPath: filePath,
         symbol,
         generatedAt: currentDate.toISOString(),
-        reportUrl: `file://${filePath}` // 本地文件URL
+        reportUrl: `file://${filePath}`, // 本地文件URL
       };
     } catch (error) {
       console.error('写入HTML报告时出错:', error);
-      throw new Error(`无法保存HTML报告: ${error instanceof Error ? error.message : '未知错误'}`);
+      throw new Error(
+        `无法保存HTML报告: ${error instanceof Error ? error.message : '未知错误'}`
+      );
     }
   },
 });
@@ -104,13 +109,31 @@ const integrateAnalysis = new Step({
   }),
   execute: async ({ context }) => {
     // 获取前面步骤的结果
-    const bbsrResult = context.getStepResult<{ analysis: string }>('bbsr-analysis');
-    const chipResult = context.getStepResult<{ analysis: string }>('chip-analysis');
-    const patternResult = context.getStepResult<{ analysis: string }>('pattern-analysis');
-    const newsResult = context.getStepResult<{ analysis: string }>('news-analysis');
+    const bbsrResult = context.getStepResult<{ analysis: string }>(
+      'bbsr-analysis'
+    );
+    const chipResult = context.getStepResult<{ analysis: string }>(
+      'chip-analysis'
+    );
+    const patternResult = context.getStepResult<{ analysis: string }>(
+      'pattern-analysis'
+    );
+    const newsResult = context.getStepResult<{ analysis: string }>(
+      'news-analysis'
+    );
+    const fundamentalResult = context.getStepResult<{ analysis: string }>(
+      'fundamental-analysis'
+    );
     const triggerData = context.getStepResult<{ symbol: string }>('trigger');
 
-    if (!bbsrResult || !chipResult || !patternResult || !newsResult || !triggerData) {
+    if (
+      !bbsrResult ||
+      !chipResult ||
+      !patternResult ||
+      !fundamentalResult ||
+      !newsResult ||
+      !triggerData
+    ) {
       throw new Error('无法获取必要的分析结果');
     }
 
@@ -120,17 +143,19 @@ const integrateAnalysis = new Step({
       instructions: `
         你是一位专业的股票分析整合师，能够将不同角度的股票分析结果综合成一份全面而精确的报告。
         
-        你将获得以下四种分析报告：
+        你将获得以下五种分析报告：
         1. BBSR分析（支撑/阻力位的牛熊信号）
         2. 筹码分析（筹码分布、持仓结构）
         3. 形态分析（技术形态、趋势特征）
-        4. 新闻分析（市场新闻和事件）
+        4. 公司基本面分析（财务等数据）
+        5. 新闻分析（市场新闻和事件）
         
         你的任务是：
         - 识别并突出共同的关键发现
         - 找出不同分析方法之间的互补或矛盾之处
         - 将技术分析（前三项）与基本面/新闻分析相结合
         - 提供一个整体的市场情绪评估
+        - 提供公司财务状况评估
         - 总结可能的支撑位和阻力位（寻找多方法确认的水平）
         - 识别关键的短期和中期催化剂（来自新闻）
         - 对股票的综合状况提供清晰的评估
@@ -139,13 +164,14 @@ const integrateAnalysis = new Step({
         1. 报告标题（包含股票代码和日期）
         2. 执行摘要（3-5句关键发现）
         3. 技术分析整合（BBSR + 筹码 + 形态）
-        4. 新闻影响分析
-        5. 综合评估
+        4. 公司财务状况分析
+        5. 新闻影响分析
+        6. 综合评估
            - 市场情绪
            - 关键价位
            - 风险因素
            - 潜在催化剂
-        6. 建议观察点
+        7. 建议观察点
         
         请使用专业但易于理解的语言，避免过度技术性术语。提供具体的数据点和百分比来支持你的结论。
       `,
@@ -165,6 +191,9 @@ const integrateAnalysis = new Step({
       
       === 形态分析 ===
       ${patternResult.analysis}
+      
+      === 公司基本面信息 === 
+      ${fundamentalResult.analysis}
       
       === 新闻分析 ===
       ${newsResult.analysis}
@@ -197,6 +226,35 @@ const bbsrAnalysisStep = new Step({
 
     if (!agent) {
       throw new Error('未找到BBSR分析Agent');
+    }
+
+    // 执行分析
+    const response = await agent.generate(`分析股票${triggerData.symbol}`);
+
+    return {
+      analysis: response.text,
+      symbol: triggerData.symbol,
+    };
+  },
+});
+
+// 创建筹码分析步骤
+const fundamentalAnalysisStep = new Step({
+  id: 'fundamental-analysis',
+  description: '分析公司基本面情况',
+  inputSchema: stockInputSchema,
+  execute: async ({ context, mastra }) => {
+    const triggerData = context.getStepResult<{ symbol: string }>('trigger');
+
+    if (!triggerData) {
+      throw new Error('无法获取股票代码');
+    }
+
+    // 获取筹码分析Agent
+    const agent = mastra.getAgent('companyFundamentalsAgent');
+
+    if (!agent) {
+      throw new Error('未找到基本面分析Agent');
     }
 
     // 执行分析
@@ -287,7 +345,9 @@ const newsAnalysisStep = new Step({
     }
 
     // 执行分析
-    const response = await agent.generate(`查找${triggerData.symbol}最近的重要新闻和事件，并分析其对股价的可能影响`);
+    const response = await agent.generate(
+      `查找${triggerData.symbol}最近的重要新闻和事件，并分析其对股价的可能影响`
+    );
 
     return {
       analysis: response.text,
@@ -304,8 +364,15 @@ const stockAnalysisWorkflow = new Workflow({
   .step(bbsrAnalysisStep)
   .step(chipAnalysisStep)
   .step(patternAnalysisStep)
+  .step(fundamentalAnalysisStep)
   .step(newsAnalysisStep)
-  .after([bbsrAnalysisStep, chipAnalysisStep, patternAnalysisStep, newsAnalysisStep])
+  .after([
+    bbsrAnalysisStep,
+    chipAnalysisStep,
+    patternAnalysisStep,
+    fundamentalAnalysisStep,
+    newsAnalysisStep,
+  ])
   .step(integrateAnalysis)
   .then(generateHtmlReport);
 

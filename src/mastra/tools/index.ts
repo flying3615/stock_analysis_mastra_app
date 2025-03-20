@@ -6,6 +6,10 @@ import {
   multiTimeframePatternAnalysis,
 } from '@gabriel3615/ta_analysis';
 
+// 导入新工具
+import { economicIndicatorsTool } from './economic-indicators-tool.js';
+import { companyFundamentalsTool } from './company-fundamentals-tool.js';
+
 /**
  * 处理并格式化错误信息
  * @param symbol 股票代码
@@ -185,3 +189,6 @@ export const chipAnalysisTool = createTool({
     }
   },
 });
+
+// 导出新工具
+export { economicIndicatorsTool, companyFundamentalsTool };
