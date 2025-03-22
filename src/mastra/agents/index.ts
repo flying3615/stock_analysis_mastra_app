@@ -198,6 +198,6 @@ export const integratorAgent = new Agent({
         
         请使用专业但易于理解的语言，避免过度技术性术语。提供具体的数据点和百分比来支持你的结论。
       `,
-  model: deepseek('deepseek-reasoner'),
+  model: openai('gpt-4o'),
   memory: stockAnalysisMemory,
 });
