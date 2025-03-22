@@ -74,8 +74,12 @@ const generateHtmlReport = new Step({
       // 确保目录存在
       await fs.mkdir(reportDir, { recursive: true });
 
-      // 写入HTML文件
-      await fs.writeFile(filePath, response.text, 'utf-8');
+      // 移除可能的markdown代码块标记
+      const cleanHtml = response.text
+        .replace(/^```html\s*/i, '')
+        .replace(/```\s*$/i, '');
+
+      await fs.writeFile(filePath, cleanHtml, 'utf-8');
 
       console.log(`HTML报告已保存至: ${filePath}`);
 
