@@ -18,8 +18,8 @@ importers:
         specifier: ^9.21.0
         version: 9.22.0
       '@gabriel3615/ta_analysis':
-        specifier: ^1.0.8
-        version: 1.0.8(eslint@9.22.0)(prettier@3.5.3)(typescript@5.8.2)
+        specifier: ^1.0.9
+        version: 1.0.9(eslint@9.22.0)(prettier@3.5.3)(typescript@5.8.2)
       '@mastra/core':
         specifier: ^0.6.3
         version: 0.6.3(react@19.0.0)
@@ -540,8 +540,8 @@ packages:
     resolution: {integrity: sha512-JubJ5B2pJ4k4yGxaNLdbjrnk9d/iDz6/q8wOilpIowd6PJPgaxCuHBnBszq7Ce2TyMrywm5r4PnKm6V3iiZF+g==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@gabriel3615/ta_analysis@1.0.8':
-    resolution: {integrity: sha512-3qPrxm41UYD1u488zBHQTziuLxXXEBkZjKIKRU6lLAsw03wapZwrrj42W+/MPgGlXadU9yzNv3ZY4KYTv2qKVA==}
+  '@gabriel3615/ta_analysis@1.0.9':
+    resolution: {integrity: sha512-rVo4eG9x6KlzQNcFPcKMWCjJWPk09W1I3bA1+IB/VlD9H/RrD/PUvxgq9Wt0aphxumdcBQHA/vKi9CAda8D32A==}
 
   '@grpc/grpc-js@1.13.0':
     resolution: {integrity: sha512-pMuxInZjUnUkgMT2QLZclRqwk2ykJbIU05aZgPgJYXEpN9+2I7z7aNwcjWZSycRPl232FfhPszyBFJyOxTHNog==}
@@ -4329,7 +4329,7 @@ snapshots:
       '@eslint/core': 0.12.0
       levn: 0.4.1
 
-  '@gabriel3615/ta_analysis@1.0.8(eslint@9.22.0)(prettier@3.5.3)(typescript@5.8.2)':
+  '@gabriel3615/ta_analysis@1.0.9(eslint@9.22.0)(prettier@3.5.3)(typescript@5.8.2)':
     dependencies:
       '@eslint/js': 9.22.0
       eslint-config-prettier: 10.1.1(eslint@9.22.0)

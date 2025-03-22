@@ -2,10 +2,10 @@ import { openai } from '@ai-sdk/openai';
 import { Agent } from '@mastra/core/agent';
 import { Step, Workflow } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { stockAnalysisMemory } from '../config/memory-config.js';
 import fs from 'fs/promises';
 import path from 'path';
 import { format } from 'date-fns';
+import { integratorAgent } from '../agents/index.js';
 
 // 创建生成HTML报告并保存的步骤
 const generateHtmlReport = new Step({
@@ -46,7 +46,7 @@ const generateHtmlReport = new Step({
         
         输出应是一个完整的HTML文件，包含内联CSS样式。不需要包含任何说明或HTML以外的其他内容。
       `,
-      model: openai('gpt-4o-mini'),
+      model: openai('gpt-4o'),
     });
 
     // 构建提示词
@@ -101,22 +101,10 @@ const stockInputSchema = z.object({
 const integrateAnalysis = new Step({
   id: 'integrate-analysis',
   description: '整合所有分析结果，生成综合报告',
-  inputSchema: z.object({
-    bbsrAnalysis: z.string(),
-    chipAnalysis: z.string(),
-    patternAnalysis: z.string(),
-    newsAnalysis: z.string(),
-  }),
   execute: async ({ context }) => {
     // 获取前面步骤的结果
-    const bbsrResult = context.getStepResult<{ analysis: string }>(
-      'bbsr-analysis'
-    );
-    const chipResult = context.getStepResult<{ analysis: string }>(
-      'chip-analysis'
-    );
-    const patternResult = context.getStepResult<{ analysis: string }>(
-      'pattern-analysis'
+    const taResult = context.getStepResult<{ analysis: string }>(
+      'technical-analysis'
     );
     const newsResult = context.getStepResult<{ analysis: string }>(
       'news-analysis'
@@ -126,71 +114,16 @@ const integrateAnalysis = new Step({
     );
     const triggerData = context.getStepResult<{ symbol: string }>('trigger');
 
-    if (
-      !bbsrResult ||
-      !chipResult ||
-      !patternResult ||
-      !fundamentalResult ||
-      !newsResult ||
-      !triggerData
-    ) {
+    if (!taResult || !fundamentalResult || !newsResult || !triggerData) {
       throw new Error('无法获取必要的分析结果');
     }
-
-    // 创建一个整合分析的Agent
-    const integratorAgent = new Agent({
-      name: 'Stock Analysis Integrator',
-      instructions: `
-        你是一位专业的股票分析整合师，能够将不同角度的股票分析结果综合成一份全面而精确的报告。
-        
-        你将获得以下五种分析报告：
-        1. BBSR分析（支撑/阻力位的牛熊信号）
-        2. 筹码分析（筹码分布、持仓结构）
-        3. 形态分析（技术形态、趋势特征）
-        4. 公司基本面分析（财务等数据）
-        5. 新闻分析（市场新闻和事件）
-        
-        你的任务是：
-        - 识别并突出共同的关键发现
-        - 找出不同分析方法之间的互补或矛盾之处
-        - 将技术分析（前三项）与基本面/新闻分析相结合
-        - 提供一个整体的市场情绪评估
-        - 提供公司财务状况评估
-        - 总结可能的支撑位和阻力位（寻找多方法确认的水平）
-        - 识别关键的短期和中期催化剂（来自新闻）
-        - 对股票的综合状况提供清晰的评估
-        
-        输出格式：
-        1. 报告标题（包含股票代码和日期）
-        2. 执行摘要（3-5句关键发现）
-        3. 技术分析整合（BBSR + 筹码 + 形态）
-        4. 公司财务状况分析
-        5. 新闻影响分析
-        6. 综合评估
-           - 市场情绪
-           - 关键价位
-           - 风险因素
-           - 潜在催化剂
-        7. 建议观察点
-        
-        请使用专业但易于理解的语言，避免过度技术性术语。提供具体的数据点和百分比来支持你的结论。
-      `,
-      model: openai('gpt-4o'),
-      memory: stockAnalysisMemory,
-    });
 
     // 构建提示词
     const prompt = `
       请对股票 ${triggerData.symbol} 进行综合分析，整合以下四个方面的分析结果：
       
-      === BBSR分析（支撑/阻力位的牛熊信号）===
-      ${bbsrResult.analysis}
-      
-      === 筹码分析 ===
-      ${chipResult.analysis}
-      
-      === 形态分析 ===
-      ${patternResult.analysis}
+      === 技术分析===
+      ${taResult.analysis}
       
       === 公司基本面信息 === 
       ${fundamentalResult.analysis}
@@ -209,11 +142,10 @@ const integrateAnalysis = new Step({
   },
 });
 
-// 创建BBSR分析步骤
-const bbsrAnalysisStep = new Step({
-  id: 'bbsr-analysis',
-  description: '分析股票在支撑/阻力位的牛熊信号',
-  inputSchema: stockInputSchema,
+// 创建技术分析分析步骤
+const technicalAnalysisStep = new Step({
+  id: 'technical-analysis',
+  description: '股票技术分析',
   execute: async ({ context, mastra }) => {
     const triggerData = context.getStepResult<{ symbol: string }>('trigger');
 
@@ -221,11 +153,11 @@ const bbsrAnalysisStep = new Step({
       throw new Error('无法获取股票代码');
     }
 
-    // 获取BBSR分析Agent
-    const agent = mastra.getAgent('bbsrAnalysisAgent');
+    // 获取技术分析Agent
+    const agent = mastra.getAgent('technicalAnalysisAgent');
 
     if (!agent) {
-      throw new Error('未找到BBSR分析Agent');
+      throw new Error('未找到股票技术分析Agent');
     }
 
     // 执行分析
@@ -242,7 +174,6 @@ const bbsrAnalysisStep = new Step({
 const fundamentalAnalysisStep = new Step({
   id: 'fundamental-analysis',
   description: '分析公司基本面情况',
-  inputSchema: stockInputSchema,
   execute: async ({ context, mastra }) => {
     const triggerData = context.getStepResult<{ symbol: string }>('trigger');
 
@@ -255,64 +186,6 @@ const fundamentalAnalysisStep = new Step({
 
     if (!agent) {
       throw new Error('未找到基本面分析Agent');
-    }
-
-    // 执行分析
-    const response = await agent.generate(`分析股票${triggerData.symbol}`);
-
-    return {
-      analysis: response.text,
-      symbol: triggerData.symbol,
-    };
-  },
-});
-
-// 创建筹码分析步骤
-const chipAnalysisStep = new Step({
-  id: 'chip-analysis',
-  description: '分析股票的筹码分布情况',
-  inputSchema: stockInputSchema,
-  execute: async ({ context, mastra }) => {
-    const triggerData = context.getStepResult<{ symbol: string }>('trigger');
-
-    if (!triggerData) {
-      throw new Error('无法获取股票代码');
-    }
-
-    // 获取筹码分析Agent
-    const agent = mastra.getAgent('chipAnalysisAgent');
-
-    if (!agent) {
-      throw new Error('未找到筹码分析Agent');
-    }
-
-    // 执行分析
-    const response = await agent.generate(`分析股票${triggerData.symbol}`);
-
-    return {
-      analysis: response.text,
-      symbol: triggerData.symbol,
-    };
-  },
-});
-
-// 创建形态分析步骤
-const patternAnalysisStep = new Step({
-  id: 'pattern-analysis',
-  description: '分析股票的技术形态',
-  inputSchema: stockInputSchema,
-  execute: async ({ context, mastra }) => {
-    const triggerData = context.getStepResult<{ symbol: string }>('trigger');
-
-    if (!triggerData) {
-      throw new Error('无法获取股票代码');
-    }
-
-    // 获取形态分析Agent
-    const agent = mastra.getAgent('patternAnalysisAgent');
-
-    if (!agent) {
-      throw new Error('未找到形态分析Agent');
     }
 
     // 执行分析
@@ -361,18 +234,10 @@ const stockAnalysisWorkflow = new Workflow({
   name: 'comprehensive-stock-analysis',
   triggerSchema: stockInputSchema,
 })
-  .step(bbsrAnalysisStep)
-  .step(chipAnalysisStep)
-  .step(patternAnalysisStep)
+  .step(technicalAnalysisStep)
   .step(fundamentalAnalysisStep)
   .step(newsAnalysisStep)
-  .after([
-    bbsrAnalysisStep,
-    chipAnalysisStep,
-    patternAnalysisStep,
-    fundamentalAnalysisStep,
-    newsAnalysisStep,
-  ])
+  .after([technicalAnalysisStep, fundamentalAnalysisStep, newsAnalysisStep])
   .step(integrateAnalysis)
   .then(generateHtmlReport);
 

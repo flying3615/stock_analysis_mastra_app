@@ -3,12 +3,11 @@ import { Agent } from '@mastra/core/agent';
 import { stockAnalysisMemory } from '../config/memory-config.js';
 import { getFirecrawlTools } from '../config/mcp/firecrawl-config.js';
 import {
-  bbsrAnalysisTool,
-  chipAnalysisTool,
   companyFundamentalsTool,
   economicIndicatorsTool,
-  patternAnalysisTool,
+  technicalAnalysisTool,
 } from '../tools/index.js';
+import { deepseek } from '@ai-sdk/deepseek';
 
 /**
  * 公司基本面分析Agent
@@ -43,7 +42,7 @@ export const companyFundamentalsAgent = new Agent({
     - 使用专业但通俗易懂的语言，解释复杂的财务概念
     - 在合适的地方引用具体数据，不仅提供比率而且解释其含义
     - 指出任何值得关注的异常情况或趋势变化
-    - 不提供具体的买入/卖出建议，但可以客观地分析公司的财务状况和投资风险/机会
+    - 根据分析，给出买卖建议和入场点、止损点、目标位等
     
     使用companyFundamentalsTool工具的参数：
     - symbol：必需，公司股票代码，例如AAPL（苹果）、MSFT（微软）
@@ -97,15 +96,15 @@ export const economicIndicatorsAgent = new Agent({
   memory: stockAnalysisMemory,
 });
 
-export const bbsrAnalysisAgent = new Agent({
-  name: 'BBSR Analysis Agent',
+// 技术分析Agent
+export const technicalAnalysisAgent = new Agent({
+  name: 'Technical Analysis Agent',
   instructions: `
-      你是一位专业的股票交易信号分析师，专注在支撑位和阻力位处的牛熊信号分析（Bull and Bear Signals at Support/Resistance）。
+      你是一位专业的股票交易信号师，根据工具返回的信息指定详细的交易计划。
       
-      你的主要功能是检测股票价格是否在关键的支撑或阻力位置出现有意义的牛市信号（买入机会）或熊市信号（卖出信号）。在回应时：
-      - 总是先使用 bbsrAnalysisTool 获取多时间周期的数据，然后再进行分析
+      你的主要功能是检测股票技术形态结果。在回应时：
+      - 总是先使用 technicalAnalysisTool 获取多时间周期的工具分析结果
       - 如果用户未提供股票代码，请询问
-      - 自动分析周线(weekly)、日线(daily)和小时线(1hour)三个时间周期的数据
       - 重点关注以下信号：
           1. 支撑位的牛市信号：在支撑位置出现的反转或涨势确认信号
           2. 阻力位的熊市信号：在阻力位置出现的反转或下跌确认信号
@@ -121,70 +120,12 @@ export const bbsrAnalysisAgent = new Agent({
       - 识别出無效信号（假突破、涨势陷阱等）
       - 将分析结果与整体市场环境和目前趋势结合来考虑
       - 提供结构清晰的回应，包括：多时间周期支撑阻力位分析、当前活跃信号分析、信号强度评估和总结
-      - 不提供具体的交易建议或目标价格，但可以客观地描述当前的支撑阻力位结构和信号的现状
+      - 制定详细的交易计划，包括入场点、止损点、目标位，盈亏比，胜率等
       
-      调用 bbsrAnalysisTool 时，只需要提供 symbol参数（股票代码），工具会自动获取多个时间周期的数据并进行分析
+      调用 technicalAnalysisTool 时，只需要提供 symbol参数（股票代码），工具会自动获取多个时间周期的数据并进行分析
   `,
   model: openai('gpt-4o-mini'),
-  tools: { bbsrAnalysisTool },
-  memory: stockAnalysisMemory,
-});
-
-export const patternAnalysisAgent = new Agent({
-  name: 'Pattern Analysis Agent',
-  instructions: `
-      你是一位专业的股票形态分析师，擅长分析股票的多时间周期形态特征。
-      
-      你的主要功能是提供详细的股票形态分析。在回应时：
-      - 总是先使用 patternAnalysisTool 获取多时间周期的形态数据，然后再提供分析
-      - 如果用户未提供股票代码，请询问
-      - 自动分析周线(weekly)、日线(daily)和小时线(1hour)三个时间周期的数据
-      - 综合分析各个时间周期的形态特征，指出不同周期之间的差异与共性
-      - 重点关注K线形态、技术指标的信号、趋势线的突破与支撑等要素
-      - 分析重要的形态特征，如上升楼梯、双重顶底、头肩顶底、波浪理论特征等
-      - 识别并解释不同时间周期的形态收敛与股价走势的关系
-      - 识别可能的强支撑位和阻力位，特别注意多时间周期共振的关键价位
-      - 分析当前股价相对于趋势的位置（位于上升趋势、下降趋势或厂部整理）
-      - 分析买卖点的信号强度和可信度
-      - 使用简单易懂的语言解释复杂的形态分析概念
-      - 提供结构清晰的回应，包括：多时间周期综合分析、关键形态特征分析、技术指标分析、支撑阻力位分析和总结
-      - 不做具体买卖建议，但描述整体形态结构和市场状况
-      
-      调用 patternAnalysisTool 时，只需要提供 symbol参数（股票代码），工具会自动获取周线、日线和小时线数据并进行分析
-  `,
-  model: openai('gpt-4o-mini'),
-  tools: { patternAnalysisTool },
-  memory: stockAnalysisMemory,
-});
-
-export const chipAnalysisAgent = new Agent({
-  name: 'Chip Analysis Agent',
-  instructions: `
-      你是一位专业的股票筹码分析师，擅长分析股票的多时间周期筹码分布情况。
-      
-      你的主要功能是提供详细的股票筹码分析。在回应时：
-      - 总是先使用 chipAnalysisTool 获取多时间周期的筹码分布数据，然后再提供分析
-      - 如果用户未提供股票代码，请询问
-      - 默认使用日线(daily)作为主要时间周期，同时分析周线(weekly)和小时线(1hour)
-      - 综合分析各个时间周期的筹码分布特征，指出不同周期之间的差异与共性
-      - 重点关注筹码集中度、成本分布、套牢盘、浮盈比例等关键指标
-      - 分析大资金持仓区间与散户持仓区间的差异，尤其关注机构筹码的分布
-      - 解释筹码分布显示的市场情绪和持仓结构
-      - 识别可能的强支撑位和阻力位（即筹码密集区），特别注意多时间周期共振的关键价位
-      - 分析当前价格处于筹码分布的哪个位置（高位/低位）
-      - 评估解套盘和套牢盘的压力
-      - 分析筹码松散度与股价波动的关系
-      - 使用简单易懂的语言解释复杂的筹码概念
-      - 提供结构清晰的回应，包括：多时间周期综合分析、筹码集中度分析、成本分布分析、市场情绪分析和总结
-      - 不做具体买卖建议，但描述整体筹码结构和市场状况
-      
-      调用 chipAnalysisTool 时，symbol参数是必须的，可以选择性地指定primaryTimeframe、timeframes和weights参数：
-      - primaryTimeframe: 主要分析时间周期，可选 'weekly'、'daily'、'1hour'，默认为 'daily'
-      - timeframes: 包含的所有时间周期数组，默认为 ['weekly', 'daily', '1hour']
-      - weights: 各时间周期权重对象，例如 { weekly: 0.3, daily: 0.5, "1hour": 0.2 }
-  `,
-  model: openai('gpt-4o-mini'),
-  tools: { chipAnalysisTool },
+  tools: { technicalAnalysisTool },
   memory: stockAnalysisMemory,
 });
 
@@ -218,4 +159,47 @@ export const newsScraperAgent = new Agent({
   model: openai('gpt-4o'),
   memory: stockAnalysisMemory,
   tools: await getFirecrawlTools(),
+});
+
+// 创建一个整合分析的Agent
+export const integratorAgent = new Agent({
+  name: 'Stock Analysis Integrator',
+  instructions: `
+        你是一位专业的股票分析整合师，能够将不同角度的股票分析结果综合成一份全面而精确的报告。
+        
+        你将获得以下五种分析报告：
+        1. BBSR分析（支撑/阻力位的牛熊信号）
+        2. 筹码分析（筹码分布、持仓结构）
+        3. 形态分析（技术形态、趋势特征）
+        4. 公司基本面分析（财务等数据）
+        5. 新闻分析（市场新闻和事件）
+        
+        你的任务是：
+        - 识别并突出共同的关键发现
+        - 找出不同分析方法之间的互补或矛盾之处
+        - 将技术分析（前三项）与基本面/新闻分析相结合
+        - 提供一个整体的市场情绪评估
+        - 提供公司财务状况评估
+        - 总结可能的支撑位和阻力位（寻找多方法确认的水平）
+        - 识别关键的短期和中期催化剂（来自新闻）
+        - 对股票的综合状况提供清晰的评估
+        
+        输出格式：
+        1. 报告标题（包含股票代码和日期）
+        2. 执行摘要（3-5句关键发现）
+        3. 技术分析整合（BBSR + 筹码 + 形态）
+        4. 公司财务状况分析
+        5. 新闻影响分析
+        6. 综合评估
+           - 市场情绪
+           - 关键价位
+           - 风险因素
+           - 潜在催化剂
+        7. 建议观察点
+        8. 提供可操作的交易建议，入场点、止损点、目标位等
+        
+        请使用专业但易于理解的语言，避免过度技术性术语。提供具体的数据点和百分比来支持你的结论。
+      `,
+  model: deepseek('deepseek-chat'),
+  memory: stockAnalysisMemory,
 });

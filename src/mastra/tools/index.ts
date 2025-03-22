@@ -1,14 +1,10 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import {
-  getStockDataForTimeframe,
-  multiTimeFrameChipDistAnalysis,
-  multiTimeframePatternAnalysis,
+  executeIntegratedAnalysis,
 } from '@gabriel3615/ta_analysis';
-
-// 导入新工具
-import { economicIndicatorsTool } from './economic-indicators-tool.js';
-import { companyFundamentalsTool } from './company-fundamentals-tool.js';
+import { AlphaVantageQuery } from '../services/AlphaVantageQuery.js';
+import { CompanyFundamentalsArgs, EconomicIndicator } from '../types.js';
 
 /**
  * 处理并格式化错误信息
@@ -26,169 +22,160 @@ function formatErrorMessage(
 }
 
 /**
- * 获取多时间周期的股票数据
- * @param symbol 股票代码
- * @param logMessage 日志信息
- * @returns 包含周线、日线和小时线数据的对象
+ * 创建获取公司基本面数据的工具
  */
-async function fetchMultiTimeframeData(symbol: string, logMessage: string) {
-  const today = new Date();
-  console.log(logMessage);
-
-  // 设置不同时间周期的起始日期
-  const startDateWeekly = new Date();
-  startDateWeekly.setDate(today.getDate() - 365); // 获取一年的数据
-
-  const startDateDaily = new Date();
-  startDateDaily.setDate(today.getDate() - 90); // 获取三个月的数据
-
-  const startDateHourly = new Date();
-  startDateHourly.setDate(today.getDate() - 30); // 获取一个月的数据
-
-  // 获取各个周期的数据
-  const weeklyData = await getStockDataForTimeframe(
-    symbol,
-    startDateWeekly,
-    today,
-    'weekly'
-  );
-
-  const dailyData = await getStockDataForTimeframe(
-    symbol,
-    startDateDaily,
-    today,
-    'daily'
-  );
-
-  const hourlyData = await getStockDataForTimeframe(
-    symbol,
-    startDateHourly,
-    today,
-    '1hour'
-  );
-
-  return { weeklyData, dailyData, hourlyData };
-}
-
-export const bbsrAnalysisTool = createTool({
-  id: 'analyze-bbsr',
+const companyFundamentalsTool = createTool({
+  id: 'company-fundamentals',
   description:
-    '分析股票在支撑/阻力位置的牛熊信号(Bull/Bear Signal at Support/Resistance)',
+    '获取公司基本面数据，包括公司概览、收入报表、资产负债表、现金流量表和盈利情况',
   inputSchema: z.object({
-    symbol: z.string().describe('股票代码，例如：600000，000001，300001'),
+    symbol: z.string().describe('公司股票代码，例如：AAPL, MSFT, GOOGL'),
+    metrics: z
+      .array(z.enum(['overview', 'income', 'balance', 'cash', 'earnings']))
+      .describe(
+        '要获取的公司指标列表，可包含：overview（公司概览）, income（收入报表）, balance（资产负债表）, cash（现金流量表）, earnings（盈利情况）'
+      )
+      .optional(),
+  }),
+  outputSchema: z.any(),
+  execute: async ({ context }) => {
+    try {
+      const { symbol, metrics } = context;
+
+      // 构建请求参数
+      const args: CompanyFundamentalsArgs = {
+        symbol,
+        metrics: metrics || ['overview'],
+      };
+
+      // 从环境变量获取API密钥
+      const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+
+      if (!apiKey) {
+        throw new Error('未设置ALPHA_VANTAGE_API_KEY环境变量');
+      }
+
+      // 初始化查询类实例
+      const query = new AlphaVantageQuery();
+
+      // 获取公司基本面数据
+      const result = await query.companyFundamentals(apiKey, args);
+
+      if (!result) {
+        throw new Error('获取公司基本面数据失败');
+      }
+
+      return result;
+    } catch (error) {
+      throw new Error(
+        `获取公司基本面数据出错: ${error instanceof Error ? error.message : '未知错误'}`
+      );
+    }
+  },
+});
+
+/**
+ * 创建获取经济指标数据的工具
+ */
+const economicIndicatorsTool = createTool({
+  id: 'economic-indicators',
+  description:
+    '获取宏观经济指标数据，如GDP、通胀率、失业率、联邦基金利率、CPI和零售销售',
+  inputSchema: z.object({
+    indicators: z
+      .array(
+        z.enum([
+          'GDP',
+          'Inflation',
+          'Unemployment',
+          'FedFundsRate',
+          'CPI',
+          'RetailSales',
+        ])
+      )
+      .describe(
+        '要获取的经济指标列表，可包含：GDP, Inflation, Unemployment, FedFundsRate, CPI, RetailSales'
+      ),
+  }),
+  outputSchema: z.any(),
+  execute: async ({ context }) => {
+    try {
+      const { indicators } = context;
+
+      // 将字符串数组转换为EconomicIndicator枚举数组
+      const indicatorEnums = indicators.map(indicatorStr => {
+        switch (indicatorStr) {
+          case 'GDP':
+            return EconomicIndicator.GDP;
+          case 'Inflation':
+            return EconomicIndicator.Inflation;
+          case 'Unemployment':
+            return EconomicIndicator.Unemployment;
+          case 'FedFundsRate':
+            return EconomicIndicator.FedFundsRate;
+          case 'CPI':
+            return EconomicIndicator.CPI;
+          case 'RetailSales':
+            return EconomicIndicator.RetailSales;
+          default:
+            throw new Error(`未知的经济指标: ${indicatorStr}`);
+        }
+      });
+
+      // 从环境变量获取API密钥
+      const apiKey = process.env.ALPHA_VANTAGE_API_KEY;
+
+      if (!apiKey) {
+        throw new Error('未设置ALPHA_VANTAGE_API_KEY环境变量');
+      }
+
+      // 初始化查询类实例
+      const query = new AlphaVantageQuery();
+
+      // 获取经济指标数据
+      const result = await query.getEconomicIndicators(apiKey, indicatorEnums);
+
+      if (!result) {
+        throw new Error('获取经济指标数据失败');
+      }
+
+      return result;
+    } catch (error) {
+      throw new Error(
+        `获取经济指标数据出错: ${error instanceof Error ? error.message : '未知错误'}`
+      );
+    }
+  },
+});
+
+/**
+ * 创建技术分析工具
+ */
+const technicalAnalysisTool = createTool({
+  id: 'analyze-technical',
+  description: '分析股票综合技术走势',
+  inputSchema: z.object({
+    symbol: z.string().describe('股票代码，例如 AAPL 或 MSFT'),
   }),
   outputSchema: z.any(), // 使用z.any()替代复杂的自定义类型
   execute: async ({ context }) => {
     try {
       const { symbol } = context;
 
-      // 获取多时间周期数据
-      const { weeklyData, dailyData, hourlyData } =
-        await fetchMultiTimeframeData(
-          symbol,
-          `正在获取${symbol}的数据与分析BBSR信号...`
-        );
-
-      // 调用多时间周期形态分析函数
-      return await multiTimeframePatternAnalysis(
-        weeklyData,
-        dailyData,
-        hourlyData
-      );
+      // 调用多时间周期牛熊分析函数
+      return await executeIntegratedAnalysis(symbol, {
+        chip: 0.4,
+        pattern: 0.6,
+      });
     } catch (error) {
       throw new Error(formatErrorMessage(context.symbol, error, 'BBSR信号'));
     }
   },
 });
 
-export const patternAnalysisTool = createTool({
-  id: 'analyze-pattern',
-  description: '分析股票的多时间周期形态特征',
-  inputSchema: z.object({
-    symbol: z.string().describe('股票代码，例如：600000，000001，300001'),
-  }),
-  outputSchema: z.any(), // 使用z.any()替代复杂的自定义类型
-  execute: async ({ context }) => {
-    try {
-      const { symbol } = context;
-
-      // 获取多时间周期数据
-      const { weeklyData, dailyData, hourlyData } =
-        await fetchMultiTimeframeData(
-          symbol,
-          `正在获取${symbol}的数据与分析形态特征...`
-        );
-
-      // 调用多时间周期形态分析函数
-      return await multiTimeframePatternAnalysis(
-        weeklyData,
-        dailyData,
-        hourlyData
-      );
-    } catch (error) {
-      throw new Error(
-        formatErrorMessage(context.symbol, error, '多时间周期形态特征')
-      );
-    }
-  },
-});
-
-export const chipAnalysisTool = createTool({
-  id: 'analyze-chip',
-  description: '分析股票的筹码分布数据（多时间周期）',
-  inputSchema: z.object({
-    symbol: z.string().describe('股票代码，例如：600000，000001，300001'),
-    primaryTimeframe: z
-      .enum(['weekly', 'daily', '1hour'])
-      .default('daily')
-      .describe('主要分析时间周期'),
-    timeframes: z
-      .array(z.enum(['weekly', 'daily', '1hour']))
-      .default(['weekly', 'daily', '1hour'])
-      .describe('包含的所有时间周期'),
-    weights: z
-      .record(z.string(), z.number())
-      .optional()
-      .describe(
-        '各时间周期权重，例如: { weekly: 0.3, daily: 0.5, "1hour": 0.2 }'
-      ),
-  }),
-  outputSchema: z.any(), // 使用z.any()替代z.custom<MultiTimeframeAnalysisResult>()来避免类型错误
-  execute: async ({ context }) => {
-    try {
-      const { symbol, primaryTimeframe, timeframes, weights } = context;
-
-      // 设置默认权重（如果未提供）
-      const timeframeWeights = weights || {
-        weekly: 0.3,
-        daily: 0.5,
-        '1hour': 0.2,
-      };
-
-      // 获取多时间周期数据
-      const { weeklyData, dailyData, hourlyData } =
-        await fetchMultiTimeframeData(
-          symbol,
-          `正在获取${symbol}的数据与分析筹码分布...`
-        );
-
-      // 调用多时间周期筹码分布分析函数
-      return await multiTimeFrameChipDistAnalysis(
-        symbol,
-        primaryTimeframe,
-        timeframes,
-        timeframeWeights as Record<string, number>,
-        weeklyData,
-        dailyData,
-        hourlyData
-      );
-    } catch (error) {
-      throw new Error(
-        formatErrorMessage(context.symbol, error, '多时间周期筹码数据')
-      );
-    }
-  },
-});
-
 // 导出新工具
-export { economicIndicatorsTool, companyFundamentalsTool };
+export {
+  economicIndicatorsTool,
+  companyFundamentalsTool,
+  technicalAnalysisTool,
+};
