@@ -27,6 +27,9 @@ const generateHtmlReport = new Step({
 
     const { integratedAnalysis, symbol } = integrationResult;
 
+    const currentDate = new Date();
+    const formattedDate = format(currentDate, 'yyyy-MM-dd');
+
     // 使用Agent来生成HTML
     const htmlGeneratorAgent = new Agent({
       name: 'HTML Report Generator',
@@ -39,7 +42,7 @@ const generateHtmlReport = new Step({
         - 使用现代的CSS框架（比如Bootstrap或类似的）
         - 确保格式良好，有标题、分节和分隔线
         - 添加颜色编码或图标以便于识别市场情绪（看涨/看跌/中性）
-        - 添加日期和时间戳
+        - 添加日期(今天的日期是：${formattedDate})
         - 将数据点和数字突出显示
         - 可以添加仿色影、前景区域等设计元素
         - 生成一个完整的HTML文件，包含所有必要的标签（html, head, body等）
@@ -60,8 +63,7 @@ const generateHtmlReport = new Step({
     const response = await htmlGeneratorAgent.generate(prompt);
 
     // 生成文件名与路径
-    const currentDate = new Date();
-    const formattedDate = format(currentDate, 'yyyy-MM-dd');
+
     const fileName = `${symbol}_analysis_${formattedDate}.html`;
 
     // 创建路径
