@@ -1,8 +1,6 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import {
-  executeIntegratedAnalysis,
-} from '@gabriel3615/ta_analysis';
+import { executeIntegratedAnalysis } from '@gabriel3615/ta_analysis';
 import { AlphaVantageQuery } from '../services/AlphaVantageQuery.js';
 import { CompanyFundamentalsArgs, EconomicIndicator } from '../types.js';
 

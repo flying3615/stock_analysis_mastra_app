@@ -6,6 +6,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { format } from 'date-fns';
 import { integratorAgent } from '../agents/index.js';
+import { reloadIndex } from '../../utils/generate_index.js';
 
 // 创建生成HTML报告并保存的步骤
 const generateHtmlReport = new Step({
@@ -35,7 +36,7 @@ const generateHtmlReport = new Step({
       name: 'HTML Report Generator',
       instructions: `
         你是一名专业的HTML报告生成器，可以将Markdown格式的分析报告转换为漂亮的HTML网页。
-        
+
         你的任务是：
         - 将提供的股票分析报告转换为带有样式的HTML
         - 创建一个响应式、美观的设计
@@ -46,7 +47,7 @@ const generateHtmlReport = new Step({
         - 将数据点和数字突出显示
         - 可以添加仿色影、前景区域等设计元素
         - 生成一个完整的HTML文件，包含所有必要的标签（html, head, body等）
-        
+
         输出应是一个完整的HTML文件，包含内联CSS样式。不需要包含任何说明或HTML以外的其他内容。
       `,
       model: openai('gpt-4o'),
@@ -55,7 +56,7 @@ const generateHtmlReport = new Step({
     // 构建提示词
     const prompt = `
       请将以下关于${symbol}股票的分析报告转换为漂亮的HTML网页：
-      
+
       ${integratedAnalysis}
     `;
 
@@ -63,11 +64,10 @@ const generateHtmlReport = new Step({
     const response = await htmlGeneratorAgent.generate(prompt);
 
     // 生成文件名与路径
-
     const fileName = `${symbol}_analysis_${formattedDate}.html`;
 
     // 创建路径
-    const reportDir = path.join(process.cwd(), 'reports');
+    const reportDir = path.join(`${process.cwd()}/../..`, 'reports');
     const filePath = path.join(reportDir, fileName);
 
     try {
@@ -83,12 +83,9 @@ const generateHtmlReport = new Step({
 
       console.log(`HTML报告已保存至: ${filePath}`);
 
-      return {
-        reportPath: filePath,
-        symbol,
-        generatedAt: currentDate.toISOString(),
-        reportUrl: `file://${filePath}`, // 本地文件URL
-      };
+      reloadIndex();
+
+      console.log('索引页面已成功生成: index.html');
     } catch (error) {
       console.error('写入HTML报告时出错:', error);
       throw new Error(

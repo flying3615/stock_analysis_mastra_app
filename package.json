@@ -8,8 +8,10 @@
     "example:memory": "tsx src/examples/memory-example.ts",
     "example:news": "tsx src/examples/news-scraper/news-scraper-example.ts",
     "example:comprehensive": "tsx src/examples/comprehensive-analysis/comprehensive-analysis-example.ts",
+    "example:sqlite-insights": "tsx src/examples/sqlite-storage/sqlite-insights-example.ts",
     "lint": "npx eslint src",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "generate-index": "tsx src/utils/generate_index.ts"
   },
   "keywords": [],
   "author": "",

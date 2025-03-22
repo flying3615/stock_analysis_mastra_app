@@ -7,7 +7,6 @@ import {
   economicIndicatorsTool,
   technicalAnalysisTool,
 } from '../tools/index.js';
-import { deepseek } from '@ai-sdk/deepseek';
 
 /**
  * 公司基本面分析Agent
@@ -156,7 +155,7 @@ export const newsScraperAgent = new Agent({
       
       调用firecrawl工具时，请确保提供必要的参数，如URL、查询关键词等，并根据用户需求选择适当的格式选项。
     `,
-  model: openai('gpt-4o'),
+  model: openai('gpt-4o-mini'),
   memory: stockAnalysisMemory,
   tools: await getFirecrawlTools(),
 });
@@ -167,7 +166,7 @@ export const integratorAgent = new Agent({
   instructions: `
         你是一位专业的股票分析整合师，能够将不同角度的股票分析结果综合成一份全面而精确的报告。
         
-        你将获得以下三种分析报告：
+        严格按照以下三种报告内容进行分析：
         1. 技术分析
         2. 公司基本面分析（财务等数据）
         3. 新闻分析（市场新闻和事件）
@@ -196,8 +195,8 @@ export const integratorAgent = new Agent({
         7. 建议观察点
         8. 提供可操作的交易建议，入场点、止损点、目标位，风险回报比等
         
-        请使用专业但易于理解的语言，避免过度技术性术语。提供具体的数据点和百分比来支持你的结论。
+        请使用专业但易于理解的语言，避免过度技术性术语。提供具体的数据点和百分比来支持你的结论，不要捏造信息或提供不准确的数据。
       `,
-  model: openai('gpt-4o'),
+  model: openai('gpt-4o-mini'),
   memory: stockAnalysisMemory,
 });
