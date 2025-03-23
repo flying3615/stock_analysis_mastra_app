@@ -7,6 +7,7 @@ import {
   economicIndicatorsTool,
   technicalAnalysisTool,
 } from '../tools/index.js';
+import {getToday} from "../../utils/utils.js";
 
 /**
  * 公司基本面分析Agent
@@ -184,7 +185,7 @@ export const integratorAgent = new Agent({
         输出格式：
         1. 报告标题（包含股票代码和日期）
         2. 执行摘要（3-5句关键发现）
-        3. 技术分析摘要
+        3. 技术分析摘要 (注意标明关键价位出现的日期，方便用户查找)
         4. 公司财务状况分析
         5. 新闻影响分析
         6. 综合评估
@@ -199,4 +200,26 @@ export const integratorAgent = new Agent({
       `,
   model: openai('gpt-4o-mini'),
   memory: stockAnalysisMemory,
+});
+
+// 使用Agent来生成HTML
+export const htmlGeneratorAgent = new Agent({
+  name: 'HTML Report Generator',
+  instructions: `
+        你是一名专业的HTML报告生成器，可以将Markdown格式的分析报告转换为漂亮的HTML网页。
+
+        你的任务是：
+        - 将提供的股票分析报告转换为带有样式的HTML
+        - 创建一个响应式、美观的设计
+        - 使用现代的CSS框架（比如Bootstrap或类似的）
+        - 确保格式良好，有标题、分节和分隔线
+        - 添加颜色编码或图标以便于识别市场情绪（看涨/看跌/中性）
+        - 添加日期(今天的日期是：${getToday()})
+        - 将数据点和数字突出显示
+        - 可以添加仿色影、前景区域等设计元素
+        - 生成一个完整的HTML文件，包含所有必要的标签（html, head, body等）
+
+        输出应是一个完整的HTML文件，包含内联CSS样式。不需要包含任何说明或HTML以外的其他内容。
+      `,
+  model: openai('gpt-4o'),
 });

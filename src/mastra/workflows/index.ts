@@ -5,8 +5,9 @@ import { z } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
 import { format } from 'date-fns';
-import { integratorAgent } from '../agents/index.js';
+import {htmlGeneratorAgent, integratorAgent} from '../agents/index.js';
 import { reloadIndex } from '../../utils/generate_index.js';
+import {getToday} from "../../utils/utils.js";
 
 // 创建生成HTML报告并保存的步骤
 const generateHtmlReport = new Step({
@@ -28,31 +29,6 @@ const generateHtmlReport = new Step({
 
     const { integratedAnalysis, symbol } = integrationResult;
 
-    const currentDate = new Date();
-    const formattedDate = format(currentDate, 'yyyy-MM-dd');
-
-    // 使用Agent来生成HTML
-    const htmlGeneratorAgent = new Agent({
-      name: 'HTML Report Generator',
-      instructions: `
-        你是一名专业的HTML报告生成器，可以将Markdown格式的分析报告转换为漂亮的HTML网页。
-
-        你的任务是：
-        - 将提供的股票分析报告转换为带有样式的HTML
-        - 创建一个响应式、美观的设计
-        - 使用现代的CSS框架（比如Bootstrap或类似的）
-        - 确保格式良好，有标题、分节和分隔线
-        - 添加颜色编码或图标以便于识别市场情绪（看涨/看跌/中性）
-        - 添加日期(今天的日期是：${formattedDate})
-        - 将数据点和数字突出显示
-        - 可以添加仿色影、前景区域等设计元素
-        - 生成一个完整的HTML文件，包含所有必要的标签（html, head, body等）
-
-        输出应是一个完整的HTML文件，包含内联CSS样式。不需要包含任何说明或HTML以外的其他内容。
-      `,
-      model: openai('gpt-4o'),
-    });
-
     // 构建提示词
     const prompt = `
       请将以下关于${symbol}股票的分析报告转换为漂亮的HTML网页：
@@ -64,7 +40,7 @@ const generateHtmlReport = new Step({
     const response = await htmlGeneratorAgent.generate(prompt);
 
     // 生成文件名与路径
-    const fileName = `${symbol}_analysis_${formattedDate}.html`;
+    const fileName = `${symbol}_analysis_${getToday()}.html`;
 
     // 创建路径
     const reportDir = path.join(`${process.cwd()}/../..`, 'reports');
@@ -83,6 +59,7 @@ const generateHtmlReport = new Step({
 
       console.log(`HTML报告已保存至: ${filePath}`);
 
+      // 重新生成索引页面
       reloadIndex();
 
       console.log('索引页面已成功生成: index.html');
