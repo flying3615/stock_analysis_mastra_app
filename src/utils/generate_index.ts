@@ -133,15 +133,37 @@ function generateHTML(stockGroups: StockGroups): string {
             border-bottom: 2px solid #eee;
             padding-bottom: 10px;
         }
-        h2 {
+        .stock-header {
             color: #3498db;
             margin-top: 30px;
-            padding-bottom: 5px;
+            padding: 10px;
             border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stock-header:hover {
+            background-color: #f9f9f9;
+        }
+        .stock-content {
+            display: none;
+            padding: 10px;
+        }
+        .stock-content.active {
+            display: block;
+        }
+        .collapsible-icon {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+        }
+        .stock-header.active .collapsible-icon {
+            transform: rotate(90deg);
         }
         ul {
             list-style: none;
             padding-left: 20px;
+            margin: 0;
         }
         li {
             margin-bottom: 8px;
@@ -196,32 +218,56 @@ function generateHTML(stockGroups: StockGroups): string {
             : Object.keys(stockGroups)
                 .sort()
                 .map(
-                  stockCode => `
-            <h2>${stockCode} 交易计划</h2>
-            <ul>
-                ${stockGroups[stockCode]
-                  .map(
-                    data => `
-                <li>
-                    <span class="date">${data.date}</span>
-                    <a href="./${data.filename}">${stockCode} 交易分析</a>
-                </li>
-                `
-                  )
-                  .join('')}
-            </ul>
+                  (stockCode, index) => `
+            <div class="stock-section">
+                <h2 class="stock-header" onclick="toggleSection(${index})">
+                    ${stockCode} 交易计划
+                    <span class="collapsible-icon">›</span>
+                </h2>
+                <div id="stock-content-${index}" class="stock-content">
+                    <ul>
+                        ${stockGroups[stockCode]
+                          .map(
+                            data => `
+                        <li>
+                            <span class="date">${data.date}</span>
+                            <a href="./${data.filename}">${stockCode} 交易分析</a>
+                        </li>
+                        `
+                          )
+                          .join('')}
+                    </ul>
+                </div>
+            </div>
           `
                 )
                 .join('')
         }
         
         <p class="last-updated">最后更新: ${updateTime}</p>
-        
-        <div class="command">
-            每次添加新的交易计划文件后，运行以下命令更新索引：<br>
-            <code>npm run generate-index</code>
-        </div>
     </div>
+
+    <script>
+        // 切换展开/折叠功能
+        function toggleSection(index) {
+            const content = document.getElementById('stock-content-' + index);
+            const header = content.previousElementSibling;
+            
+            // 切换内容区域的显示状态
+            content.classList.toggle('active');
+            
+            // 切换标题栏的样式
+            header.classList.toggle('active');
+        }
+        
+        // 页面加载时打开第一个部分（可选）
+        document.addEventListener('DOMContentLoaded', function() {
+            // 如果你想默认打开第一个部分，取消下面注释
+            // if (document.querySelector('.stock-section')) {
+            //     toggleSection(0);
+            // }
+        });
+    </script>
 </body>
 </html>`;
 }

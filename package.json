@@ -23,7 +23,7 @@
     "@ai-sdk/deepseek": "^0.1.15",
     "@ai-sdk/openai": "^1.2.5",
     "@eslint/js": "^9.21.0",
-    "@gabriel3615/ta_analysis": "^1.0.9",
+    "@gabriel3615/ta_analysis": "^1.2.0",
     "@mastra/core": "^0.6.3",
     "@mastra/mcp": "^0.3.4",
     "@mastra/memory": "^0.2.4",

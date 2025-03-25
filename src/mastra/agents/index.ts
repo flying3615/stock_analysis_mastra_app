@@ -8,6 +8,7 @@ import {
   technicalAnalysisTool,
 } from '../tools/index.js';
 import {getToday} from "../../utils/utils.js";
+import { deepseek } from '@ai-sdk/deepseek';
 
 /**
  * 公司基本面分析Agent
@@ -199,7 +200,7 @@ export const integratorAgent = new Agent({
         
         请使用专业但易于理解的语言，避免过度技术性术语。提供具体的数据点和百分比来支持你的结论，不要捏造信息或提供不准确的数据。
       `,
-  model: openai('gpt-4o-mini'),
+  model: deepseek('deepseek-chat'),
   memory: stockAnalysisMemory,
 });
 
