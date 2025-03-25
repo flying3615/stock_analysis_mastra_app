@@ -233,13 +233,13 @@ function generateHTML(stockGroups: StockGroups): string {
                             <span class="date">${data.date}</span>
                             <a href="./${data.filename}">${stockCode} 交易分析</a>
                         </li>
-                        `
+                        `,
                           )
                           .join('')}
                     </ul>
                 </div>
             </div>
-          `
+          `,
                 )
                 .join('')
         }

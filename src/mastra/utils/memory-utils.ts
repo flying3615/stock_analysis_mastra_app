@@ -12,7 +12,7 @@ export async function* processMemoryStream(
     onStart?: () => void;
     onEnd?: () => void;
     onMask?: (chunk: string) => void;
-  }
+  },
 ) {
   // 使用maskStreamTags处理工作记忆标签
   const maskedStream = maskStreamTags(textStream, 'working_memory', {

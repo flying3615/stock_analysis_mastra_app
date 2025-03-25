@@ -2,9 +2,9 @@ import { Step, Workflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
-import {htmlGeneratorAgent, integratorAgent} from '../agents/index.js';
+import { htmlGeneratorAgent, integratorAgent } from '../agents/index.js';
 import { reloadIndex } from '../../utils/generate_index.js';
-import {getToday} from "../../utils/utils.js";
+import { getToday } from '../../utils/utils.js';
 
 // 创建生成HTML报告并保存的步骤
 const generateHtmlReport = new Step({
@@ -48,9 +48,7 @@ const generateHtmlReport = new Step({
       await fs.mkdir(reportDir, { recursive: true });
 
       // 移除可能的markdown代码块标记
-      const cleanHtml = response.text
-        .replace(/^```html\s*/i, '')
-        .replace(/```\s*$/i, '');
+      const cleanHtml = response.text.replace(/^```html\s*/i, '').replace(/```\s*$/i, '');
 
       await fs.writeFile(filePath, cleanHtml, 'utf-8');
 
@@ -62,9 +60,7 @@ const generateHtmlReport = new Step({
       console.log('索引页面已成功生成: index.html');
     } catch (error) {
       console.error('写入HTML报告时出错:', error);
-      throw new Error(
-        `无法保存HTML报告: ${error instanceof Error ? error.message : '未知错误'}`
-      );
+      throw new Error(`无法保存HTML报告: ${error instanceof Error ? error.message : '未知错误'}`);
     }
   },
 });
@@ -80,15 +76,9 @@ const integrateAnalysis = new Step({
   description: '整合所有分析结果，生成综合报告',
   execute: async ({ context }) => {
     // 获取前面步骤的结果
-    const taResult = context.getStepResult<{ analysis: string }>(
-      'technical-analysis'
-    );
-    const newsResult = context.getStepResult<{ analysis: string }>(
-      'news-analysis'
-    );
-    const fundamentalResult = context.getStepResult<{ analysis: string }>(
-      'fundamental-analysis'
-    );
+    const taResult = context.getStepResult<{ analysis: string }>('technical-analysis');
+    const newsResult = context.getStepResult<{ analysis: string }>('news-analysis');
+    const fundamentalResult = context.getStepResult<{ analysis: string }>('fundamental-analysis');
     const triggerData = context.getStepResult<{ symbol: string }>('trigger');
 
     if (!taResult || !fundamentalResult || !newsResult || !triggerData) {
@@ -196,7 +186,7 @@ const newsAnalysisStep = new Step({
 
     // 执行分析
     const response = await agent.generate(
-      `查找${triggerData.symbol}最近的重要新闻和事件，并分析其对股价的可能影响`
+      `查找${triggerData.symbol}最近的重要新闻和事件，并分析其对股价的可能影响`,
     );
 
     return {

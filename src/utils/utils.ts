@@ -1,6 +1,6 @@
-import {format} from "date-fns";
+import { format } from 'date-fns';
 
-export const getToday = ()=>{
-    const currentDate = new Date();
-    return format(currentDate, 'yyyy-MM-dd');
-}
+export const getToday = () => {
+  const currentDate = new Date();
+  return format(currentDate, 'yyyy-MM-dd');
+};

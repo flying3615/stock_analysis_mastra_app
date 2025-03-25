@@ -7,7 +7,7 @@ import {
   economicIndicatorsTool,
   technicalAnalysisTool,
 } from '../tools/index.js';
-import {getToday} from "../../utils/utils.js";
+import { getToday } from '../../utils/utils.js';
 import { deepseek } from '@ai-sdk/deepseek';
 
 /**

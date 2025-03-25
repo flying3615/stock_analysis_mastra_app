@@ -9,7 +9,7 @@ import {
   newsScraperAgent,
   technicalAnalysisAgent,
   integratorAgent,
-  htmlGeneratorAgent
+  htmlGeneratorAgent,
 } from './agents/index.js';
 
 // 初始化并注册基本agents
@@ -21,7 +21,7 @@ const initBasicAgents = () => {
     economicIndicatorsAgent,
     technicalAnalysisAgent,
     integratorAgent,
-    htmlGeneratorAgent
+    htmlGeneratorAgent,
   };
 };
 

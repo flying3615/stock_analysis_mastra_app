@@ -7,7 +7,7 @@ export class AlphaVantageQuery {
   // 8. 获取经济指标
   async getEconomicIndicators(
     apiKey: string,
-    ecIndicators: EconomicIndicator[]
+    ecIndicators: EconomicIndicator[],
   ): Promise<any | null> {
     try {
       const result = {};
