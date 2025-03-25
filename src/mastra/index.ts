@@ -37,7 +37,7 @@ export const mastra: Mastra = new Mastra({
   }),
 });
 
-// 如果直接运行这个文件
+// 如果直接运行这个文件，将显示初始化完成信息
 if (
   typeof process !== 'undefined' &&
   import.meta.url === url.pathToFileURL(process.argv[1])?.href
