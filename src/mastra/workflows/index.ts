@@ -1,10 +1,7 @@
-import { openai } from '@ai-sdk/openai';
-import { Agent } from '@mastra/core/agent';
 import { Step, Workflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 import fs from 'fs/promises';
 import path from 'path';
-import { format } from 'date-fns';
 import {htmlGeneratorAgent, integratorAgent} from '../agents/index.js';
 import { reloadIndex } from '../../utils/generate_index.js';
 import {getToday} from "../../utils/utils.js";

@@ -8,6 +8,8 @@ import {
   economicIndicatorsAgent,
   newsScraperAgent,
   technicalAnalysisAgent,
+  integratorAgent,
+  htmlGeneratorAgent
 } from './agents/index.js';
 
 // 初始化并注册基本agents
@@ -18,6 +20,8 @@ const initBasicAgents = () => {
     companyFundamentalsAgent,
     economicIndicatorsAgent,
     technicalAnalysisAgent,
+    integratorAgent,
+    htmlGeneratorAgent
   };
 };
 
