@@ -1,7 +1,8 @@
 import globals from 'globals';
 import pluginJs from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import prettierConfig from 'eslint-config-prettier';
+import prettier from 'eslint-config-prettier';
+import prettierPlugin from 'eslint-plugin-prettier';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -12,9 +13,25 @@ export default [
   { languageOptions: { globals: globals.browser } },
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
-  prettierConfig, // Prettier config should be last to turn off conflicting rules
+  prettier,
   {
+    plugins: {
+      prettier: prettierPlugin,
+    },
     rules: {
+      // Prettier integration
+      'prettier/prettier': [
+        'error',
+        {
+          singleQuote: true,
+          semi: true,
+          trailingComma: 'all',
+          bracketSpacing: true,
+          arrowParens: 'avoid',
+          printWidth: 100,
+        },
+      ],
+
       // TypeScript specific rules
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -22,7 +39,7 @@ export default [
       '@typescript-eslint/ban-ts-comment': 'warn',
 
       // General rules
-      'no-console': ['warn', { allow: ['warn', 'error', 'info', 'log'] }], // Allow console.log temporarily
+      'no-console': ['warn', { allow: ['warn', 'error', 'info', 'log'] }],
       'no-unused-vars': 'off', // Turn off base rule
       '@typescript-eslint/no-unused-vars': [
         'warn',

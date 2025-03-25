@@ -10,8 +10,8 @@
     "example:comprehensive": "tsx src/examples/comprehensive-analysis/comprehensive-analysis-example.ts",
     "example:sqlite-insights": "tsx src/examples/sqlite-storage/sqlite-insights-example.ts",
     "lint": "npx eslint src",
-    "lint:fix": "npx eslint src --fix",
-    "format": "npx prettier --write 'src/**/*.{js,ts}'",
+    "lint:fix": "npx eslint --fix src",
+    "format": "npx prettier --write 'src/**/*.{js,ts}' --ignore-path .prettierignore",
     "prepare": "husky install",
     "generate-index": "tsx src/utils/generate_index.ts"
   },
@@ -46,7 +46,7 @@
     "typescript": "^5.8.2"
   },
   "lint-staged": {
-    "*.{js,ts}": [
+    "!(node_modules|dist|.mastra|reports)/**/*.{js,ts}": [
       "eslint --fix",
       "prettier --write"
     ]
