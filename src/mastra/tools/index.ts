@@ -87,21 +87,20 @@ const economicIndicatorsTool = createTool({
 
       // 将字符串数组转换为EconomicIndicator枚举数组
       const indicatorEnums = indicators.map(indicatorStr => {
-        switch (indicatorStr) {
-          case 'GDP':
-            return EconomicIndicator.GDP;
-          case 'Inflation':
-            return EconomicIndicator.Inflation;
-          case 'Unemployment':
-            return EconomicIndicator.Unemployment;
-          case 'FedFundsRate':
-            return EconomicIndicator.FedFundsRate;
-          case 'CPI':
-            return EconomicIndicator.CPI;
-          case 'RetailSales':
-            return EconomicIndicator.RetailSales;
-          default:
-            throw new Error(`未知的经济指标: ${indicatorStr}`);
+        if (indicatorStr === 'GDP') {
+          return EconomicIndicator.GDP;
+        } else if (indicatorStr === 'Inflation') {
+          return EconomicIndicator.Inflation;
+        } else if (indicatorStr === 'Unemployment') {
+          return EconomicIndicator.Unemployment;
+        } else if (indicatorStr === 'FedFundsRate') {
+          return EconomicIndicator.FedFundsRate;
+        } else if (indicatorStr === 'CPI') {
+          return EconomicIndicator.CPI;
+        } else if (indicatorStr === 'RetailSales') {
+          return EconomicIndicator.RetailSales;
+        } else {
+          throw new Error(`未知的经济指标: ${indicatorStr}`);
         }
       });
 
@@ -147,8 +146,9 @@ const technicalAnalysisTool = createTool({
 
       // 调用多时间周期牛熊分析函数
       return await executeIntegratedAnalysis(symbol, {
-        chip: 0.4,
-        pattern: 0.6,
+        chip: 0.3,
+        pattern: 0.2,
+        volume: 0.5,
       });
     } catch (error) {
       throw new Error(formatErrorMessage(context.symbol, error, 'BBSR信号'));
