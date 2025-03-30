@@ -24,7 +24,7 @@
     "@ai-sdk/anthropic": "^1.2.1",
     "@ai-sdk/deepseek": "^0.1.15",
     "@ai-sdk/openai": "^1.2.5",
-    "@gabriel3615/ta_analysis": "^1.2.1",
+    "@gabriel3615/ta_analysis": "^1.2.6",
     "@mastra/core": "^0.6.3",
     "@mastra/mcp": "^0.3.4",
     "@mastra/memory": "^0.2.4",

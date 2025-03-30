@@ -14,3 +14,17 @@ export enum EconomicIndicator {
   CPI = 'CPI',
   RetailSales = 'RetailSales',
 }
+
+export type ChartImg = {
+  title: string;
+  url: string;
+  size?: number;
+  expireAt?: string;
+  createdAt?: string;
+  media_type: string;
+};
+
+export type TimeFrameConfig = {
+  interval: string;
+  studies?: Array<{ name: string }>;
+};

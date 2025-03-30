@@ -18,8 +18,8 @@ importers:
         specifier: ^1.2.5
         version: 1.2.5(zod@3.24.2)
       '@gabriel3615/ta_analysis':
-        specifier: ^1.2.1
-        version: 1.2.1(eslint@9.23.0)(prettier@3.5.3)(typescript@5.8.2)
+        specifier: ^1.2.6
+        version: 1.2.6(encoding@0.1.13)(eslint@9.23.0)(prettier@3.5.3)(typescript@5.8.2)
       '@mastra/core':
         specifier: ^0.6.3
         version: 0.6.3(encoding@0.1.13)(react@19.0.0)
@@ -584,8 +584,8 @@ packages:
     resolution: {integrity: sha512-JubJ5B2pJ4k4yGxaNLdbjrnk9d/iDz6/q8wOilpIowd6PJPgaxCuHBnBszq7Ce2TyMrywm5r4PnKm6V3iiZF+g==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@gabriel3615/ta_analysis@1.2.1':
-    resolution: {integrity: sha512-9nqOEeXRPku7UoEOPjijYmHX6whYF/xsLXYSvexB08MYJo/z/FZgj/dFAQYcn6hAN2PckFPO6oQ4OZjXZMGnFA==}
+  '@gabriel3615/ta_analysis@1.2.6':
+    resolution: {integrity: sha512-oIKyoui/Y9ujbzz913mjujSTX2/K7WGC4xFTGjDXim+pWZG3mM4K4YSfc5QGvC+c78og33lokWVi7zbXaQ4vLQ==}
 
   '@grpc/grpc-js@1.13.0':
     resolution: {integrity: sha512-pMuxInZjUnUkgMT2QLZclRqwk2ykJbIU05aZgPgJYXEpN9+2I7z7aNwcjWZSycRPl232FfhPszyBFJyOxTHNog==}
@@ -2678,6 +2678,9 @@ packages:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
 
+  image-to-base64@2.2.0:
+    resolution: {integrity: sha512-Z+aMwm/91UOQqHhrz7Upre2ytKhWejZlWV/JxUTD1sT7GWWKFDJUEV5scVQKnkzSgPHFuQBUEWcanO+ma0PSVw==}
+
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
     engines: {node: '>=6'}
@@ -4594,12 +4597,14 @@ snapshots:
       '@eslint/core': 0.12.0
       levn: 0.4.1
 
-  '@gabriel3615/ta_analysis@1.2.1(eslint@9.23.0)(prettier@3.5.3)(typescript@5.8.2)':
+  '@gabriel3615/ta_analysis@1.2.6(encoding@0.1.13)(eslint@9.23.0)(prettier@3.5.3)(typescript@5.8.2)':
     dependencies:
       '@eslint/js': 9.23.0
+      axios: 1.8.4
       eslint-config-prettier: 10.1.1(eslint@9.23.0)
       eslint-plugin-prettier: 5.2.3(eslint-config-prettier@10.1.1(eslint@9.23.0))(eslint@9.23.0)(prettier@3.5.3)
       globals: 16.0.0
+      image-to-base64: 2.2.0(encoding@0.1.13)
       lodash: 4.17.21
       technicalindicators: 3.1.0
       typescript-eslint: 8.26.1(eslint@9.23.0)(typescript@5.8.2)
@@ -4607,6 +4612,8 @@ snapshots:
       yahoo-finance2: 2.13.3
     transitivePeerDependencies:
       - '@types/eslint'
+      - debug
+      - encoding
       - eslint
       - prettier
       - supports-color
@@ -7141,6 +7148,12 @@ snapshots:
   ieee754@1.2.1: {}
 
   ignore@5.3.2: {}
+
+  image-to-base64@2.2.0(encoding@0.1.13):
+    dependencies:
+      node-fetch: 2.7.0(encoding@0.1.13)
+    transitivePeerDependencies:
+      - encoding
 
   import-fresh@3.3.1:
     dependencies:

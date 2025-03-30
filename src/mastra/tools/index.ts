@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { executeIntegratedAnalysis } from '@gabriel3615/ta_analysis';
+import { executeIntegratedAnalysis, fetchChartData } from '@gabriel3615/ta_analysis';
 import { AlphaVantageQuery } from '../services/AlphaVantageQuery.js';
 import { CompanyFundamentalsArgs, EconomicIndicator } from '../types.js';
 
@@ -144,12 +144,25 @@ const technicalAnalysisTool = createTool({
     try {
       const { symbol } = context;
 
-      // 调用多时间周期牛熊分析函数
-      return await executeIntegratedAnalysis(symbol, {
+      const weights = {
         chip: 0.3,
         pattern: 0.2,
         volume: 0.5,
-      });
+      };
+
+      // NASDAQ指数的综合分析
+      const indexAnalysis = await executeIntegratedAnalysis('^IXIC', weights);
+      // 调用多时间周期牛熊分析函数
+      const stockAnalysis = await executeIntegratedAnalysis(symbol, weights);
+
+      // TODO call chartimage
+      // const marketQuery = new MarketQuery();
+      // const chartImages = await fetchChartData(stockCode, timeFrameConfigs);
+
+      return {
+        indexAnalysis,
+        stockAnalysis,
+      };
     } catch (error) {
       throw new Error(formatErrorMessage(context.symbol, error, 'BBSR信号'));
     }

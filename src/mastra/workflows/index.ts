@@ -128,6 +128,7 @@ const technicalAnalysisStep = new Step({
     }
 
     // 执行分析
+    //TODO https://mastra.ai/examples/agents/bird-checker
     const response = await agent.generate(`分析股票${triggerData.symbol}`);
 
     return {
