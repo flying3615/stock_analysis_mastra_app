@@ -5,6 +5,7 @@ import path from 'path';
 import { htmlGeneratorAgent, integratorAgent } from '../agents/index.js';
 import { reloadIndex } from '../../utils/generate_index.js';
 import { getToday } from '../../utils/utils.js';
+import { fetchChartData, getFullExchangeNameBySymbol, Interval } from '@gabriel3615/ta_analysis';
 
 // 创建生成HTML报告并保存的步骤
 const generateHtmlReport = new Step({
@@ -127,9 +128,47 @@ const technicalAnalysisStep = new Step({
       throw new Error('未找到股票技术分析Agent');
     }
 
+    const fullExchangeName = await getFullExchangeNameBySymbol(triggerData.symbol);
+    const stockCode = `${fullExchangeName}:${triggerData.symbol}`;
+    const chartImages = await fetchChartData(stockCode, [
+      {
+        interval: '1D' as Interval,
+        studies: [
+          { name: 'Volume' },
+          { name: 'Relative Strength Index' },
+          { name: 'Directional Movement' },
+        ],
+      },
+      {
+        interval: '1h' as Interval,
+        studies: [
+          { name: 'MACD' },
+          { name: 'Super Trend' },
+          { name: 'Volume Profile Visible Range' },
+        ],
+      },
+    ]);
+
+    const imageContents = chartImages.map(image => {
+      return {
+        type: 'image' as const,
+        image: new URL(image.url),
+      };
+    });
+
     // 执行分析
-    //TODO https://mastra.ai/examples/agents/bird-checker
-    const response = await agent.generate(`分析股票${triggerData.symbol}`);
+    const response = await agent.generate([
+      {
+        role: 'user',
+        content: [
+          ...imageContents,
+          {
+            type: 'text',
+            text: '结合图表数据和其中的指标，综合工具返回的报告，分析股票的走势并给出买入或卖出的建议',
+          },
+        ],
+      },
+    ]);
 
     return {
       analysis: response.text,

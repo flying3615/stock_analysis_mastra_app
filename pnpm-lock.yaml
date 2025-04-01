@@ -14,12 +14,15 @@ importers:
       '@ai-sdk/deepseek':
         specifier: ^0.1.15
         version: 0.1.15(zod@3.24.2)
+      '@ai-sdk/google':
+        specifier: ^1.2.5
+        version: 1.2.5(zod@3.24.2)
       '@ai-sdk/openai':
         specifier: ^1.2.5
         version: 1.2.5(zod@3.24.2)
       '@gabriel3615/ta_analysis':
-        specifier: ^1.2.6
-        version: 1.2.6(encoding@0.1.13)(eslint@9.23.0)(prettier@3.5.3)(typescript@5.8.2)
+        specifier: ^1.2.9
+        version: 1.2.9(encoding@0.1.13)(eslint@9.23.0)(prettier@3.5.3)(typescript@5.8.2)
       '@mastra/core':
         specifier: ^0.6.3
         version: 0.6.3(encoding@0.1.13)(react@19.0.0)
@@ -102,6 +105,12 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
+  '@ai-sdk/google@1.2.5':
+    resolution: {integrity: sha512-ykSPjYDmaDg7Qblo6Ea6n6O01NpyehZJE0j3+HCYBtUXKXP2RZWesr7XlceIfFBKHd0sumovRtX4ozHrb+1+sw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+
   '@ai-sdk/openai-compatible@0.1.15':
     resolution: {integrity: sha512-iuylARLylTkaVYXKdgA1GeGU2TwANaJ3RlhJqmN0cVO5uEt3qVKvedrzR3jrQIyy9hu3gngsiXfFBMW2UQ7Ntg==}
     engines: {node: '>=18'}
@@ -125,6 +134,12 @@ packages:
 
   '@ai-sdk/provider-utils@2.2.1':
     resolution: {integrity: sha512-BuExLp+NcpwsAVj1F4bgJuQkSqO/+roV9wM7RdIO+NVrcT8RBUTdXzf5arHt5T58VpK7bZyB2V9qigjaPHE+Dg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.23.8
+
+  '@ai-sdk/provider-utils@2.2.3':
+    resolution: {integrity: sha512-o3fWTzkxzI5Af7U7y794MZkYNEsxbjLam2nxyoUZSScqkacb7vZ3EYHLh21+xCcSSzEC161C7pZAGHtC0hTUMw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.23.8
@@ -584,8 +599,8 @@ packages:
     resolution: {integrity: sha512-JubJ5B2pJ4k4yGxaNLdbjrnk9d/iDz6/q8wOilpIowd6PJPgaxCuHBnBszq7Ce2TyMrywm5r4PnKm6V3iiZF+g==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@gabriel3615/ta_analysis@1.2.6':
-    resolution: {integrity: sha512-oIKyoui/Y9ujbzz913mjujSTX2/K7WGC4xFTGjDXim+pWZG3mM4K4YSfc5QGvC+c78og33lokWVi7zbXaQ4vLQ==}
+  '@gabriel3615/ta_analysis@1.2.9':
+    resolution: {integrity: sha512-OGoHxo5emEsHiGAnN5xtKFlbJuAg84CYmX0aYWBwcrqJFG+ZcvmtTjgmg8ofL0jnIQI/rRWBP25ymtY92TU3Gw==}
 
   '@grpc/grpc-js@1.13.0':
     resolution: {integrity: sha512-pMuxInZjUnUkgMT2QLZclRqwk2ykJbIU05aZgPgJYXEpN9+2I7z7aNwcjWZSycRPl232FfhPszyBFJyOxTHNog==}
@@ -3846,6 +3861,12 @@ snapshots:
       '@ai-sdk/provider-utils': 2.1.13(zod@3.24.2)
       zod: 3.24.2
 
+  '@ai-sdk/google@1.2.5(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.0
+      '@ai-sdk/provider-utils': 2.2.3(zod@3.24.2)
+      zod: 3.24.2
+
   '@ai-sdk/openai-compatible@0.1.15(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider': 1.0.11
@@ -3868,6 +3889,13 @@ snapshots:
       zod: 3.24.2
 
   '@ai-sdk/provider-utils@2.2.1(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.0
+      nanoid: 3.3.11
+      secure-json-parse: 2.7.0
+      zod: 3.24.2
+
+  '@ai-sdk/provider-utils@2.2.3(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider': 1.1.0
       nanoid: 3.3.11
@@ -4597,7 +4625,7 @@ snapshots:
       '@eslint/core': 0.12.0
       levn: 0.4.1
 
-  '@gabriel3615/ta_analysis@1.2.6(encoding@0.1.13)(eslint@9.23.0)(prettier@3.5.3)(typescript@5.8.2)':
+  '@gabriel3615/ta_analysis@1.2.9(encoding@0.1.13)(eslint@9.23.0)(prettier@3.5.3)(typescript@5.8.2)':
     dependencies:
       '@eslint/js': 9.23.0
       axios: 1.8.4

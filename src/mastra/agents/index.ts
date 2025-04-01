@@ -9,6 +9,8 @@ import {
 } from '../tools/index.js';
 import { getToday } from '../../utils/utils.js';
 import { deepseek } from '@ai-sdk/deepseek';
+import { google } from '@ai-sdk/google';
+import { LanguageModel } from '@mastra/core';
 
 /**
  * 公司基本面分析Agent
@@ -101,7 +103,8 @@ export const economicIndicatorsAgent = new Agent({
 export const technicalAnalysisAgent = new Agent({
   name: 'Technical Analysis Agent',
   instructions: `
-      你是一位专业的股票交易信号师，根据工具返回的信息指定详细的交易计划。
+      你是一位专业的股票交易信号师，按照目前主流的电脑程序交易逻辑进行交易，
+      根据工具返回的信息指定详细的交易计划。
       
       你的主要功能是检测股票技术形态结果。在回应时：
       - 总是先使用 technicalAnalysisTool 获取多时间周期的个股，大盘的分析结果
@@ -127,7 +130,7 @@ export const technicalAnalysisAgent = new Agent({
       
       调用 technicalAnalysisTool 时，只需要提供 symbol参数（股票代码），工具会自动获取多个时间周期的数据并进行分析
   `,
-  model: openai('gpt-4o-mini'),
+  model: google('gemini-2.5-pro-exp-03-25') as LanguageModel,
   tools: { technicalAnalysisTool },
   memory: stockAnalysisMemory,
 });
@@ -159,7 +162,7 @@ export const newsScraperAgent = new Agent({
       
       调用firecrawl工具时，请确保提供必要的参数，如URL、查询关键词等，并根据用户需求选择适当的格式选项。
     `,
-  model: openai('gpt-4o-mini'),
+  model: openai('gpt-4o'),
   memory: stockAnalysisMemory,
   tools: await getFirecrawlTools(),
 });
